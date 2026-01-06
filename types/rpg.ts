@@ -180,6 +180,16 @@ export interface Quest {
   type: QuestType;
   status: QuestStatus;
   xpReward: number;
+  codexPointsReward?: number;
+  blackSunEssenceReward?: number;
+  lootRewards?: {
+    itemId?: string;
+    itemName: string;
+    quantity: number;
+    rarity?: 'common' | 'rare' | 'epic' | 'legendary' | 'mythic';
+  }[];
+  linkedSkillIds?: string[];
+  skillXpReward?: number;
   progress?: {
     current: number;
     target: number;

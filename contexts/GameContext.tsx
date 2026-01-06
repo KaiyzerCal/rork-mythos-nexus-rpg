@@ -352,14 +352,73 @@ export const [GameProvider, useGame] = createContextHook(() => {
     setGameState((prev) => {
       const quest = prev.quests.find((q) => q.id === questId);
       if (!quest || quest.status === 'completed') return prev;
+      
       const updatedQuests = prev.quests.map((q) =>
         q.id === questId ? { ...q, status: 'completed' as const } : q
       );
+
+      let updatedCurrencies = [...prev.currencies];
+      let updatedInventory = [...prev.inventory];
+      let updatedSkillProficiency = { ...prev.skillProficiency };
+
+      if (quest.codexPointsReward && quest.codexPointsReward > 0) {
+        updatedCurrencies = updatedCurrencies.map(c => 
+          c.name === 'Codex Points' 
+            ? { ...c, amount: c.amount + quest.codexPointsReward! } 
+            : c
+        );
+        console.log(`[QUEST] Awarded ${quest.codexPointsReward} Codex Points`);
+      }
+
+      if (quest.blackSunEssenceReward && quest.blackSunEssenceReward > 0) {
+        updatedCurrencies = updatedCurrencies.map(c => 
+          c.name === 'Black Sun Essence' 
+            ? { ...c, amount: c.amount + quest.blackSunEssenceReward! } 
+            : c
+        );
+        console.log(`[QUEST] Awarded ${quest.blackSunEssenceReward} Black Sun Essence`);
+      }
+
+      if (quest.lootRewards && quest.lootRewards.length > 0) {
+        quest.lootRewards.forEach(loot => {
+          const existingItem = updatedInventory.find(item => item.name === loot.itemName);
+          if (existingItem) {
+            updatedInventory = updatedInventory.map(item =>
+              item.name === loot.itemName
+                ? { ...item, quantity: item.quantity + loot.quantity }
+                : item
+            );
+          } else {
+            updatedInventory.push({
+              id: Date.now().toString() + Math.random(),
+              name: loot.itemName,
+              description: `Obtained from quest: ${quest.title}`,
+              type: 'material',
+              rarity: loot.rarity || 'common',
+              quantity: loot.quantity,
+            });
+          }
+          console.log(`[QUEST] Awarded ${loot.quantity}x ${loot.itemName}`);
+        });
+      }
+
+      if (quest.linkedSkillIds && quest.linkedSkillIds.length > 0 && quest.skillXpReward && quest.skillXpReward > 0) {
+        quest.linkedSkillIds.forEach(skillId => {
+          updatedSkillProficiency[skillId] = (updatedSkillProficiency[skillId] || 0) + quest.skillXpReward!;
+          const skillName = prev.skillTrees.find(s => s.id === skillId)?.name || skillId;
+          console.log(`[QUEST] Awarded ${quest.skillXpReward} XP to skill: ${skillName}. Total: ${updatedSkillProficiency[skillId]}`);
+        });
+      }
+      
       const newState = {
         ...prev,
         quests: updatedQuests,
+        currencies: updatedCurrencies,
+        inventory: updatedInventory,
+        skillProficiency: updatedSkillProficiency,
       };
       saveGameState(newState);
+      
       if (quest.xpReward > 0) {
         setTimeout(() => addXP(quest.xpReward), 100);
       }

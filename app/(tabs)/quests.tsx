@@ -19,7 +19,12 @@ export default function QuestsScreen() {
     description: '',
     type: 'side' as QuestType,
     xpReward: 100,
+    codexPointsReward: 0,
+    blackSunEssenceReward: 0,
+    skillXpReward: 0,
     targetProgress: 100,
+    linkedSkillIds: [] as string[],
+    lootRewards: [] as { itemName: string; quantity: number; rarity?: 'common' | 'rare' | 'epic' | 'legendary' | 'mythic' }[],
   });
 
   const [taskFormData, setTaskFormData] = useState({
@@ -39,7 +44,12 @@ export default function QuestsScreen() {
       description: '',
       type: 'side',
       xpReward: 100,
+      codexPointsReward: 0,
+      blackSunEssenceReward: 0,
+      skillXpReward: 0,
       targetProgress: 100,
+      linkedSkillIds: [],
+      lootRewards: [],
     });
     setTaskFormData({
       title: '',
@@ -67,6 +77,11 @@ export default function QuestsScreen() {
         description: formData.description,
         type: formData.type,
         xpReward: formData.xpReward,
+        codexPointsReward: formData.codexPointsReward > 0 ? formData.codexPointsReward : undefined,
+        blackSunEssenceReward: formData.blackSunEssenceReward > 0 ? formData.blackSunEssenceReward : undefined,
+        skillXpReward: formData.skillXpReward > 0 ? formData.skillXpReward : undefined,
+        linkedSkillIds: formData.linkedSkillIds.length > 0 ? formData.linkedSkillIds : undefined,
+        lootRewards: formData.lootRewards.length > 0 ? formData.lootRewards : undefined,
         progress: editingQuest.progress ? {
           ...editingQuest.progress,
           target: formData.targetProgress,
@@ -79,6 +94,11 @@ export default function QuestsScreen() {
         type: formData.type,
         status: 'active',
         xpReward: formData.xpReward,
+        codexPointsReward: formData.codexPointsReward > 0 ? formData.codexPointsReward : undefined,
+        blackSunEssenceReward: formData.blackSunEssenceReward > 0 ? formData.blackSunEssenceReward : undefined,
+        skillXpReward: formData.skillXpReward > 0 ? formData.skillXpReward : undefined,
+        linkedSkillIds: formData.linkedSkillIds.length > 0 ? formData.linkedSkillIds : undefined,
+        lootRewards: formData.lootRewards.length > 0 ? formData.lootRewards : undefined,
         progress: { current: 0, target: formData.targetProgress },
       });
     }
@@ -104,7 +124,7 @@ export default function QuestsScreen() {
 
   const allSkills = useMemo(() => {
     const skills = gameState.skillTrees.map(s => ({ id: s.id, name: s.name, isParent: true }));
-    const subSkills: Array<{ id: string; name: string; isParent: false; parentId: string }> = [];
+    const subSkills: { id: string; name: string; isParent: false; parentId: string }[] = [];
     
     Object.entries(gameState.skillSubTrees || {}).forEach(([parentId, subTree]) => {
       subTree.forEach(sub => {
@@ -179,7 +199,12 @@ export default function QuestsScreen() {
       description: quest.description || '',
       type: quest.type,
       xpReward: quest.xpReward,
+      codexPointsReward: quest.codexPointsReward || 0,
+      blackSunEssenceReward: quest.blackSunEssenceReward || 0,
+      skillXpReward: quest.skillXpReward || 0,
       targetProgress: quest.progress?.target || 100,
+      linkedSkillIds: quest.linkedSkillIds || [],
+      lootRewards: quest.lootRewards || [],
     });
     setModalVisible(true);
   };
@@ -199,11 +224,7 @@ export default function QuestsScreen() {
     setModalVisible(true);
   };
 
-  const handleToggleArchive = (task: Task) => {
-    updateTask(task.id, {
-      status: task.status === 'archived' ? 'active' : 'archived',
-    });
-  };
+
 
   const filteredTasks = useMemo(() => {
     let tasks = gameState.tasks;
@@ -695,6 +716,81 @@ export default function QuestsScreen() {
                       keyboardType="numeric"
                     />
                   </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Codex Points Reward</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={formData.codexPointsReward.toString()}
+                      onChangeText={(text) => setFormData({ ...formData, codexPointsReward: parseInt(text) || 0 })}
+                      placeholder="0"
+                      placeholderTextColor="#666"
+                      keyboardType="numeric"
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Black Sun Essence Reward</Text>
+                    <TextInput
+                      style={styles.formInput}
+                      value={formData.blackSunEssenceReward.toString()}
+                      onChangeText={(text) => setFormData({ ...formData, blackSunEssenceReward: parseInt(text) || 0 })}
+                      placeholder="0"
+                      placeholderTextColor="#666"
+                      keyboardType="numeric"
+                    />
+                  </View>
+
+                  <View style={styles.formGroup}>
+                    <Text style={styles.formLabel}>Associated Skills (Multi-Select)</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      style={styles.skillSelector}
+                    >
+                      {allSkills.skills.map((skill) => (
+                        <Pressable
+                          key={skill.id}
+                          onPress={() => {
+                            const isSelected = formData.linkedSkillIds.includes(skill.id);
+                            setFormData({
+                              ...formData,
+                              linkedSkillIds: isSelected
+                                ? formData.linkedSkillIds.filter(id => id !== skill.id)
+                                : [...formData.linkedSkillIds, skill.id]
+                            });
+                          }}
+                          style={[
+                            styles.skillChip,
+                            formData.linkedSkillIds.includes(skill.id) && styles.skillChipActive,
+                          ]}>
+                          <Text style={[
+                            styles.skillChipText,
+                            formData.linkedSkillIds.includes(skill.id) && styles.skillChipTextActive,
+                          ]}>{skill.name}</Text>
+                        </Pressable>
+                      ))}
+                    </ScrollView>
+                    {formData.linkedSkillIds.length > 0 && (
+                      <Text style={styles.helperText}>
+                        {formData.linkedSkillIds.length} skill{formData.linkedSkillIds.length > 1 ? 's' : ''} selected
+                      </Text>
+                    )}
+                  </View>
+
+                  {formData.linkedSkillIds.length > 0 && (
+                    <View style={styles.formGroup}>
+                      <Text style={styles.formLabel}>Skill XP Reward (per skill)</Text>
+                      <TextInput
+                        style={styles.formInput}
+                        value={formData.skillXpReward.toString()}
+                        onChangeText={(text) => setFormData({ ...formData, skillXpReward: parseInt(text) || 0 })}
+                        placeholder="0"
+                        placeholderTextColor="#666"
+                        keyboardType="numeric"
+                      />
+                    </View>
+                  )}
                 </>
               ) : (
                 <>
@@ -1372,6 +1468,11 @@ const styles = StyleSheet.create({
   },
   skillChipTextActive: {
     color: '#0A0A0A',
+  },
+  helperText: {
+    fontSize: 11,
+    color: '#08C284',
+    marginTop: 8,
   },
   modalActions: {
     flexDirection: 'row',
