@@ -18,12 +18,6 @@ import { listCalendarEvents, createCalendarEvent, updateCalendarEvent, deleteCal
 import { listVaultEntries, createVaultEntry, updateVaultEntry, deleteVaultEntry } from "./routes/vault/entries";
 import { listSkills, saveSkillsData, unlockSkill, updateSkillProficiency } from "./routes/skills/manage";
 import { listTasks, saveTasks, createTask, completeTask, deleteTask } from "./routes/tasks/manage";
-import { getAppleIntegrationStatus, saveAppleIntegrationTokens, disconnectAppleIntegration, syncAppleCalendar, syncAppleReminders, syncHealthKit } from "./routes/integrations/apple";
-import { getQuest, updateQuest, deleteQuest, completeQuest, updateQuestProgress, toggleSubtask } from "./routes/quests/manage";
-import { searchMemory, deleteMemoryFact, archiveMemory, getMemoryStats, exportMemory, importMemory } from "./routes/memory/manage";
-import { trackEvent, getAnalyticsSummary, getActivityLog, getUserStats, getStreaks, updateStreak } from "./routes/analytics/tracking";
-import { createReminder, listReminders, updateReminder, deleteReminder, snoozeReminder, getDueReminders } from "./routes/reminders/manage";
-import { createTextFile, uploadFile, uploadImage, generateImage, listFiles, getFile, deleteFile } from "./routes/files/manage";
 
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
@@ -40,22 +34,10 @@ export const appRouter = createTRPCRouter({
     list: questsList,
     createDraftFromNavi: questsCreateDraft,
     approve: questsApprove,
-    get: getQuest,
-    update: updateQuest,
-    delete: deleteQuest,
-    complete: completeQuest,
-    updateProgress: updateQuestProgress,
-    toggleSubtask: toggleSubtask,
   }),
   memory: createTRPCRouter({
     getGlobalMemory: memoryGetGlobal,
     upsertMemoryFact: memoryUpsertFact,
-    search: searchMemory,
-    delete: deleteMemoryFact,
-    archive: archiveMemory,
-    getStats: getMemoryStats,
-    export: exportMemory,
-    import: importMemory,
   }),
   council: createTRPCRouter({
     listMembers: councilListMembers,
@@ -75,14 +57,6 @@ export const appRouter = createTRPCRouter({
     getStatus: getIntegrationStatus,
     saveTokens: saveIntegrationTokens,
     disconnect: disconnectIntegration,
-  }),
-  apple: createTRPCRouter({
-    getStatus: getAppleIntegrationStatus,
-    saveTokens: saveAppleIntegrationTokens,
-    disconnect: disconnectAppleIntegration,
-    syncCalendar: syncAppleCalendar,
-    syncReminders: syncAppleReminders,
-    syncHealthKit: syncHealthKit,
   }),
   calendar: createTRPCRouter({
     list: listCalendarEvents,
@@ -108,31 +82,6 @@ export const appRouter = createTRPCRouter({
     create: createTask,
     complete: completeTask,
     delete: deleteTask,
-  }),
-  analytics: createTRPCRouter({
-    track: trackEvent,
-    getSummary: getAnalyticsSummary,
-    getActivityLog: getActivityLog,
-    getUserStats: getUserStats,
-    getStreaks: getStreaks,
-    updateStreak: updateStreak,
-  }),
-  reminders: createTRPCRouter({
-    create: createReminder,
-    list: listReminders,
-    update: updateReminder,
-    delete: deleteReminder,
-    snooze: snoozeReminder,
-    getDue: getDueReminders,
-  }),
-  files: createTRPCRouter({
-    createText: createTextFile,
-    upload: uploadFile,
-    uploadImage: uploadImage,
-    generate: generateImage,
-    list: listFiles,
-    get: getFile,
-    delete: deleteFile,
   }),
 });
 
