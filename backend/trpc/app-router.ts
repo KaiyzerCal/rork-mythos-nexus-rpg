@@ -10,6 +10,14 @@ import memoryGetGlobal from "./routes/memory/get-global";
 import memoryUpsertFact from "./routes/memory/upsert-fact";
 import councilListMembers from "./routes/council/list-members";
 import councilUpsertMember from "./routes/council/upsert-member";
+import gamestateSave from "./routes/gamestate/save";
+import gamestateLoad from "./routes/gamestate/load";
+import { listThreads, getThread, saveThread, appendMessage } from "./routes/chat/threads";
+import { getIntegrationStatus, saveIntegrationTokens, disconnectIntegration } from "./routes/integrations/google";
+import { listCalendarEvents, createCalendarEvent, updateCalendarEvent, deleteCalendarEvent } from "./routes/integrations/calendar";
+import { listVaultEntries, createVaultEntry, updateVaultEntry, deleteVaultEntry } from "./routes/vault/entries";
+import { listSkills, saveSkillsData, unlockSkill, updateSkillProficiency } from "./routes/skills/manage";
+import { listTasks, saveTasks, createTask, completeTask, deleteTask } from "./routes/tasks/manage";
 
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
@@ -34,6 +42,46 @@ export const appRouter = createTRPCRouter({
   council: createTRPCRouter({
     listMembers: councilListMembers,
     upsertMember: councilUpsertMember,
+  }),
+  gamestate: createTRPCRouter({
+    save: gamestateSave,
+    load: gamestateLoad,
+  }),
+  chat: createTRPCRouter({
+    listThreads: listThreads,
+    getThread: getThread,
+    saveThread: saveThread,
+    appendMessage: appendMessage,
+  }),
+  integrations: createTRPCRouter({
+    getStatus: getIntegrationStatus,
+    saveTokens: saveIntegrationTokens,
+    disconnect: disconnectIntegration,
+  }),
+  calendar: createTRPCRouter({
+    list: listCalendarEvents,
+    create: createCalendarEvent,
+    update: updateCalendarEvent,
+    delete: deleteCalendarEvent,
+  }),
+  vault: createTRPCRouter({
+    list: listVaultEntries,
+    create: createVaultEntry,
+    update: updateVaultEntry,
+    delete: deleteVaultEntry,
+  }),
+  skills: createTRPCRouter({
+    list: listSkills,
+    save: saveSkillsData,
+    unlock: unlockSkill,
+    updateProficiency: updateSkillProficiency,
+  }),
+  tasks: createTRPCRouter({
+    list: listTasks,
+    save: saveTasks,
+    create: createTask,
+    complete: completeTask,
+    delete: deleteTask,
   }),
 });
 

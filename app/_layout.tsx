@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GameProvider } from "@/contexts/GameContext";
 import { MavisMemoryProvider } from "@/contexts/MavisMemoryContext";
 import { MavisPrimeMemoryProvider } from "@/contexts/MavisPrimePersistentMemory";
+import { BackendSyncProvider } from "@/contexts/BackendSyncContext";
 import { trpc, trpcClient } from "@/lib/trpc";
 
 SplashScreen.preventAutoHideAsync();
@@ -30,13 +31,15 @@ export default function RootLayout() {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <GameProvider>
-          <MavisMemoryProvider>
-            <MavisPrimeMemoryProvider>
-              <GestureHandlerRootView>
-                <RootLayoutNav />
-              </GestureHandlerRootView>
-            </MavisPrimeMemoryProvider>
-          </MavisMemoryProvider>
+          <BackendSyncProvider>
+            <MavisMemoryProvider>
+              <MavisPrimeMemoryProvider>
+                <GestureHandlerRootView>
+                  <RootLayoutNav />
+                </GestureHandlerRootView>
+              </MavisPrimeMemoryProvider>
+            </MavisMemoryProvider>
+          </BackendSyncProvider>
         </GameProvider>
       </QueryClientProvider>
     </trpc.Provider>
