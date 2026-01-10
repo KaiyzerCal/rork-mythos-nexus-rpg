@@ -1,6 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Cpu, Send, Sparkles, Brain, MessageSquare, Heart, Target, Flame, X, Crown, Zap, Users, Activity, ArrowDown } from 'lucide-react-native';
+import { Cpu, Send, Sparkles, Brain, MessageSquare, Heart, Target, Flame, X, Crown, Zap, Users, Activity, ArrowDown, Mic, MicOff, Loader } from 'lucide-react-native';
 import React, { useState, useRef, useEffect } from 'react';
+import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 import { useGame } from '@/contexts/GameContext';
 import { useMavisMemory } from '@/contexts/MavisMemoryContext';
 import { useMavisPrimeMemory } from '@/contexts/MavisPrimePersistentMemory';
@@ -72,7 +74,12 @@ export default function MavisScreen() {
   const [chatInitialized, setChatInitialized] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isNearBottom, setIsNearBottom] = useState(true);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const recordingRef = useRef<Audio.Recording | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const buildFullSystemContext = () => {
     const { 
@@ -530,6 +537,128 @@ RELATIONSHIPS MODULE:
     }]);
   };
 
+  const startRecording = async () => {
+    try {
+      console.log('[MAVIS-VOICE] Starting recording...');
+      
+      if (Platform.OS === 'web') {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        audioChunksRef.current = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+        
+        mediaRecorder.start();
+        mediaRecorderRef.current = mediaRecorder;
+        setIsRecording(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      } else {
+        await Audio.requestPermissionsAsync();
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+        });
+        
+        const recording = new Audio.Recording();
+        await recording.prepareToRecordAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+        await recording.startAsync();
+        recordingRef.current = recording;
+        setIsRecording(true);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      }
+      
+      console.log('[MAVIS-VOICE] Recording started');
+    } catch (error) {
+      console.error('[MAVIS-VOICE] Failed to start recording:', error);
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      console.log('[MAVIS-VOICE] Stopping recording...');
+      setIsRecording(false);
+      setIsTranscribing(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      
+      let formData = new FormData();
+      
+      if (Platform.OS === 'web') {
+        if (mediaRecorderRef.current) {
+          await new Promise<void>((resolve) => {
+            if (mediaRecorderRef.current) {
+              mediaRecorderRef.current.onstop = () => resolve();
+              mediaRecorderRef.current.stop();
+            }
+          });
+          
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          formData.append('audio', audioBlob, 'recording.webm');
+          
+          if (mediaRecorderRef.current.stream) {
+            mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+          }
+          mediaRecorderRef.current = null;
+        }
+      } else {
+        if (recordingRef.current) {
+          await recordingRef.current.stopAndUnloadAsync();
+          await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+          
+          const uri = recordingRef.current.getURI();
+          if (uri) {
+            const uriParts = uri.split('.');
+            const fileType = uriParts[uriParts.length - 1];
+            
+            const audioFile = {
+              uri,
+              name: 'recording.' + fileType,
+              type: 'audio/' + fileType,
+            };
+            
+            formData.append('audio', audioFile as any);
+          }
+          recordingRef.current = null;
+        }
+      }
+      
+      console.log('[MAVIS-VOICE] Sending to transcription service...');
+      const response = await fetch('https://toolkit.rork.com/stt/transcribe/', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Transcription failed');
+      }
+      
+      const result = await response.json();
+      console.log('[MAVIS-VOICE] Transcription result:', result);
+      
+      if (result.text) {
+        setInput(prev => prev ? `${prev} ${result.text}` : result.text);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+      
+      setIsTranscribing(false);
+    } catch (error) {
+      console.error('[MAVIS-VOICE] Failed to stop recording or transcribe:', error);
+      setIsTranscribing(false);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+    }
+  };
+
+  const toggleRecording = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  };
+
   const clearHistory = async () => {
     await AsyncStorage.removeItem(MAVIS_CHAT_HISTORY_KEY);
     const memoryCount = getMemoryContext().includes('fresh session') ? 0 : getMemoryContext().split('\n\n').length - 1;
@@ -937,6 +1066,19 @@ RELATIONSHIPS MODULE:
             maxLength={1000}
           />
           <TouchableOpacity
+            style={[styles.voiceButton, isRecording && styles.voiceButtonActive, enryuMode && isRecording && { backgroundColor: 'rgba(220, 20, 60, 0.5)' }]}
+            onPress={toggleRecording}
+            disabled={isTranscribing}
+          >
+            {isTranscribing ? (
+              <Loader size={20} color={enryuMode ? '#DC143C' : '#9400D3'} />
+            ) : isRecording ? (
+              <MicOff size={20} color="#FF4444" />
+            ) : (
+              <Mic size={20} color={enryuMode ? '#DC143C' : '#9400D3'} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
             style={[styles.sendButton, enryuMode && { backgroundColor: 'rgba(220, 20, 60, 0.3)' }, !input.trim() && styles.sendButtonDisabled]}
             onPress={handleSend}
             disabled={!input.trim()}
@@ -1130,6 +1272,20 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  voiceButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(148, 0, 211, 0.2)',
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(148, 0, 211, 0.3)',
+  },
+  voiceButtonActive: {
+    backgroundColor: 'rgba(255, 68, 68, 0.3)',
+    borderColor: '#FF4444',
   },
   dismissButton: {
     width: 36,
