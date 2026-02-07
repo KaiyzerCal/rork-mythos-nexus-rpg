@@ -386,7 +386,7 @@ export default function ScouterScreen() {
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.inputLabel}><User size={14} color="#08C284" /> What's their overall approach to life?</Text>
+                  <Text style={styles.inputLabel}><User size={14} color="#08C284" /> What{"'"}s their overall approach to life?</Text>
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     value={q5}

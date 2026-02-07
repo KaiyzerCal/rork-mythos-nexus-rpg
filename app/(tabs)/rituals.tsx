@@ -77,7 +77,7 @@ export default function RitualsScreen() {
             style={styles.progressCardGradient}
           >
             <View style={styles.progressHeader}>
-              <Text style={styles.progressTitle}>TODAY'S PROGRESS</Text>
+              <Text style={styles.progressTitle}>TODAY{"'"}S PROGRESS</Text>
               <View style={styles.progressStats}>
                 <Text style={styles.progressValue}>{totalCompleted}/{totalRituals}</Text>
               </View>
