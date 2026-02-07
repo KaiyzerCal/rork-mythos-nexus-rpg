@@ -1,0 +1,4 @@
+bun.lockb
+bun.lock
+**/bun.lockb
+**/bun.lock

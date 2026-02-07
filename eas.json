@@ -1,0 +1,26 @@
+{
+  "build": {
+    "vantara": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleVantaraRelease"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_MODE": "VANTARA",
+        "EXPO_PUBLIC_RORK_API_BASE_URL": "https://mythos-nexus-api.vantaramavis.workers.dev"
+      }
+    },
+    "navi": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleNaviRelease"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_MODE": "NAVI",
+        "EXPO_PUBLIC_RORK_API_BASE_URL": "https://mythos-navi-api.vantaramavis.workers.dev"
+      }
+    }
+  }
+}
