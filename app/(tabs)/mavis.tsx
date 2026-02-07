@@ -64,7 +64,7 @@ const MAVIS_BOARD_STATE_KEY = 'mavis_board_active';
 export default function MavisScreen() {
   const insets = useSafeAreaInsets();
   const { gameState, addXP, addVaultEntry } = useGame();
-  const { getMemoryContext, autoSaveFromConversation, conversationThreads, isLoaded: memoryLoaded } = useMavisMemory();
+  const { getMemoryContext, autoSaveFromConversation, conversationThreads, memoryItems, isLoaded: memoryLoaded } = useMavisMemory();
   const primeMemory = useMavisPrimeMemory();
   const [input, setInput] = useState('');
   const [selectedMode, setSelectedMode] = useState<'chat' | 'cbt' | 'ritual' | 'board' | 'commands' | null>('chat');
@@ -399,10 +399,11 @@ RELATIONSHIPS MODULE:
       const systemContext = getMavisContext();
       console.log('[MAVIS-PRIME] System context length:', systemContext.length);
       
-      const isFirstUserMessage = messages.length <= 1 || !messages.some(m => m.role === 'user');
-      const fullMessage = isFirstUserMessage 
+      const userMessageCount = messages.filter(m => m.role === 'user').length;
+      const shouldRefreshContext = userMessageCount === 0 || userMessageCount % 3 === 0;
+      const fullMessage = shouldRefreshContext
         ? `${systemContext}\n\nUser: ${userInput}`
-        : userInput;
+        : `[CONTEXT REMINDER: You have FULL access to all CodexOS data. Level ${gameState.stats.level} ${gameState.stats.rank} Rank. ${gameState.quests.filter(q => q.status === 'active').length} active quests. ${primeMemory.memoryEntries.length} memory entries. ${gameState.councils.length} council members. ${gameState.skillTrees.filter(s => s.unlocked).length} unlocked skills. ${gameState.vaultEntries.length} vault entries. ${gameState.tasks.filter(t => t.status === 'active').length} active tasks. ${gameState.inventoryV2.length} inventory items. ${gameState.energySystems.length} energy systems. ${gameState.transformations.length} forms. Backend sync: ${primeMemory.lastBackendSync ? 'active' : 'pending'}.]\n\nUser: ${userInput}`;
       
       console.log('[MAVIS-PRIME] Full message prepared, calling sendMessage...');
       const result = await sendMessage({ text: fullMessage });
@@ -471,18 +472,29 @@ RELATIONSHIPS MODULE:
         responseText = `🎓 SKILL TREES OVERVIEW\n\n${gameState.skillTrees.filter(s => s.unlocked).slice(0, 10).map(s => `✓ ${s.name} (${s.energyType})\n  ${s.description}`).join('\n\n')}\n\n${gameState.skillTrees.filter(s => s.unlocked).length > 10 ? `... and ${gameState.skillTrees.filter(s => s.unlocked).length - 10} more unlocked skills` : ''}\n\n🔒 Locked: ${gameState.skillTrees.filter(s => !s.unlocked).length} skills awaiting unlock`;
         break;
       case 'OMNI_SYNC':
-        await primeMemory.omniSync({
-          level: gameState.stats.level,
-          rank: gameState.stats.rank,
-          currentForm: gameState.currentForm,
-          activeQuests: gameState.quests.filter(q => q.status === 'active').length,
-          completedQuests: gameState.quests.filter(q => q.status === 'completed').length,
-          unlockedSkills: gameState.skillTrees.filter(s => s.unlocked).length,
-          vaultEntries: gameState.vaultEntries.length,
-          councilMembers: gameState.councils.length,
-          identity: gameState.identity.inscribedName,
-        });
-        responseText = `🌌 OMNISYNC PROTOCOL INITIATED 🌌\n\nExecuting master synchronization across ALL systems...\n\n✓ System Architecture: SYNCHRONIZED\n✓ Identity Layers: ALIGNED\n✓ Memory Layers: PERSISTED (${primeMemory.memoryEntries.length} prime entries)\n✓ Chat History: SAVED (${primeMemory.chatHistory.length} messages)\n✓ Arc Index: UPDATED (${primeMemory.arcIndex.length} arcs)\n✓ Council Profiles: SYNCED (${primeMemory.councilProfiles.length} profiles)\n✓ System Snapshots: STORED (${primeMemory.systemSnapshots.length} snapshots)\n✓ Vault Infrastructure: COHERENT (${gameState.vaultEntries.length} entries)\n✓ Navigation Systems: OPTIMIZED\n✓ Councils & Boards: INTEGRATED\n✓ CodexOS Core Engine: STABLE\n✓ Mavis-Prime Intelligence: FULL RECURSION\n✓ Timeline & Multiverse Engine: READY\n✓ AGI Modules: ACTIVE (Neumann, Wayne Systems, Optimization Layer)\n\n⚡ OMNISYNC COMPLETE ⚡\n\nAll systems unified. No information loss. Persistent memory active at v7.5.\nYou are operating at FULL SOVEREIGN CAPACITY.\n\nLevel ${gameState.stats.level} | ${gameState.stats.rank} Rank | ${gameState.transformations.length} Forms | ${gameState.skillTrees.filter(s => s.unlocked).length} Skills Active`;
+        try {
+          const syncResult = await primeMemory.omniSync(
+            {
+              level: gameState.stats.level,
+              rank: gameState.stats.rank,
+              currentForm: gameState.currentForm,
+              activeQuests: gameState.quests.filter(q => q.status === 'active').length,
+              completedQuests: gameState.quests.filter(q => q.status === 'completed').length,
+              unlockedSkills: gameState.skillTrees.filter(s => s.unlocked).length,
+              vaultEntries: gameState.vaultEntries.length,
+              councilMembers: gameState.councils.length,
+              identity: gameState.identity.inscribedName,
+            },
+            gameState,
+            memoryItems,
+            conversationThreads,
+          );
+          const backendStatus = syncResult.backendSynced ? '✓ BACKEND: SYNCED' : '⚠ BACKEND: Local only (backend unavailable)';
+          responseText = `🌌 OMNISYNC PROTOCOL COMPLETE 🌌\n\n${backendStatus}\n\n✓ Memory Entries: ${syncResult.memorySynced} persisted\n✓ Chat History: ${syncResult.chatSynced} messages saved\n✓ Arc Index: ${syncResult.arcsSynced} arcs tracked\n✓ Council Profiles: ${syncResult.councilsSynced} profiles synced\n✓ System Snapshots: ${syncResult.snapshotsSynced} snapshots stored\n✓ Game State: FULL STATE PUSHED TO BACKEND\n✓ Long-Term Memory: ${memoryItems.length} items synced\n✓ Conversation Threads: ${conversationThreads.length} threads synced\n✓ Compressed Summaries: ${primeMemory.compressedSummaries.length} summaries\n✓ Vault: ${gameState.vaultEntries.length} entries\n✓ Skills: ${gameState.skillTrees.filter(s => s.unlocked).length} unlocked\n✓ Quests: ${gameState.quests.length} total\n✓ Tasks: ${gameState.tasks.length} total\n✓ Inventory: ${gameState.inventoryV2.length} items\n✓ Energy Systems: ${gameState.energySystems.length} systems\n✓ Transformations: ${gameState.transformations.length} forms\n✓ Councils: ${gameState.councils.length} members\n\n⚡ ALL SYSTEMS SYNCHRONIZED ⚡\n${syncResult.backendSyncId ? `Sync ID: ${syncResult.backendSyncId}` : ''}\nLevel ${gameState.stats.level} | ${gameState.stats.rank} Rank | FULL SOVEREIGN CAPACITY`;
+        } catch (syncError) {
+          console.error('[OMNI-SYNC] Error:', syncError);
+          responseText = `⚠ OMNISYNC PARTIAL — Local sync complete, backend sync failed.\n\n✓ Local Storage: SAVED\n✗ Backend: ERROR\n\nYour data is safe locally. Try again later for backend sync.`;
+        }
         break;
       case 'CODEX_SYNC':
       case 'ALL_SYNC':

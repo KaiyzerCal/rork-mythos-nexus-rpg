@@ -1,6 +1,7 @@
 import Storage from 'expo-sqlite/kv-store';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
+import { trpcClient } from '@/lib/trpc';
 
 export interface PrimeMemoryEntry {
   id: string;
@@ -60,13 +61,27 @@ export interface SystemSnapshot {
   identity: string;
 }
 
+interface CompressedMemorySummary {
+  id: string;
+  timestamp: number;
+  period: string;
+  keyFacts: string[];
+  importantDecisions: string[];
+  emotionalPatterns: string[];
+  activeArcs: string[];
+  compressedFrom: number;
+}
+
 interface MavisPrimeMemoryState {
   memoryEntries: PrimeMemoryEntry[];
   chatHistory: ChatMessage[];
   arcIndex: ArcIndex[];
   councilProfiles: CouncilProfile[];
   systemSnapshots: SystemSnapshot[];
+  compressedSummaries: CompressedMemorySummary[];
   isLoaded: boolean;
+  lastBackendSync: number | null;
+  backendSyncStatus: 'idle' | 'syncing' | 'success' | 'error';
 }
 
 const PRIME_MEMORY_KEY = 'mavis_prime_memory_core_v7_5';
@@ -74,12 +89,16 @@ const PRIME_CHAT_KEY = 'mavis_prime_chat_history_v7_5';
 const PRIME_ARCS_KEY = 'mavis_prime_arc_index_v7_5';
 const PRIME_COUNCIL_PROFILES_KEY = 'mavis_prime_council_profiles_v7_5';
 const PRIME_SNAPSHOTS_KEY = 'mavis_prime_system_snapshots_v7_5';
+const PRIME_COMPRESSED_KEY = 'mavis_prime_compressed_summaries_v1';
+const PRIME_BACKEND_SYNC_KEY = 'mavis_prime_last_backend_sync';
 
 const MAX_MEMORY_ENTRIES = 1000;
 const MAX_CHAT_HISTORY = 500;
 const MAX_ARC_INDEX = 50;
 const MAX_COUNCIL_PROFILES = 100;
 const MAX_SNAPSHOTS = 100;
+const COMPRESSION_THRESHOLD = 200;
+const COMPRESSION_TARGET = 150;
 
 export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook(() => {
   const [state, setState] = useState<MavisPrimeMemoryState>({
@@ -88,8 +107,13 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     arcIndex: [],
     councilProfiles: [],
     systemSnapshots: [],
+    compressedSummaries: [],
     isLoaded: false,
+    lastBackendSync: null,
+    backendSyncStatus: 'idle',
   });
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   useEffect(() => {
     loadAllMemory();
@@ -104,26 +128,42 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         storedArcs,
         storedCouncils,
         storedSnapshots,
+        storedCompressed,
+        storedLastSync,
       ] = await Promise.all([
         Storage.getItem(PRIME_MEMORY_KEY),
         Storage.getItem(PRIME_CHAT_KEY),
         Storage.getItem(PRIME_ARCS_KEY),
         Storage.getItem(PRIME_COUNCIL_PROFILES_KEY),
         Storage.getItem(PRIME_SNAPSHOTS_KEY),
+        Storage.getItem(PRIME_COMPRESSED_KEY),
+        Storage.getItem(PRIME_BACKEND_SYNC_KEY),
       ]);
 
-      const memoryEntries: PrimeMemoryEntry[] = storedMemory ? JSON.parse(storedMemory) : [];
-      const chatHistory: ChatMessage[] = storedChat ? JSON.parse(storedChat) : [];
-      const arcIndex: ArcIndex[] = storedArcs ? JSON.parse(storedArcs) : [];
-      const councilProfiles: CouncilProfile[] = storedCouncils ? JSON.parse(storedCouncils) : [];
-      const systemSnapshots: SystemSnapshot[] = storedSnapshots ? JSON.parse(storedSnapshots) : [];
+      let memoryEntries: PrimeMemoryEntry[] = [];
+      let chatHistory: ChatMessage[] = [];
+      let arcIndex: ArcIndex[] = [];
+      let councilProfiles: CouncilProfile[] = [];
+      let systemSnapshots: SystemSnapshot[] = [];
+      let compressedSummaries: CompressedMemorySummary[] = [];
+      let lastBackendSync: number | null = null;
 
-      console.log('[PRIME-MEMORY] Loaded:');
+      try { memoryEntries = storedMemory ? JSON.parse(storedMemory) : []; } catch { memoryEntries = []; }
+      try { chatHistory = storedChat ? JSON.parse(storedChat) : []; } catch { chatHistory = []; }
+      try { arcIndex = storedArcs ? JSON.parse(storedArcs) : []; } catch { arcIndex = []; }
+      try { councilProfiles = storedCouncils ? JSON.parse(storedCouncils) : []; } catch { councilProfiles = []; }
+      try { systemSnapshots = storedSnapshots ? JSON.parse(storedSnapshots) : []; } catch { systemSnapshots = []; }
+      try { compressedSummaries = storedCompressed ? JSON.parse(storedCompressed) : []; } catch { compressedSummaries = []; }
+      try { lastBackendSync = storedLastSync ? parseInt(storedLastSync, 10) : null; } catch { lastBackendSync = null; }
+
+      console.log('[PRIME-MEMORY] Loaded from local storage:');
       console.log(`  - ${memoryEntries.length} memory entries`);
       console.log(`  - ${chatHistory.length} chat messages`);
       console.log(`  - ${arcIndex.length} arc indexes`);
       console.log(`  - ${councilProfiles.length} council profiles`);
       console.log(`  - ${systemSnapshots.length} system snapshots`);
+      console.log(`  - ${compressedSummaries.length} compressed summaries`);
+      console.log(`  - Last backend sync: ${lastBackendSync ? new Date(lastBackendSync).toISOString() : 'never'}`);
 
       setState({
         memoryEntries,
@@ -131,8 +171,13 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         arcIndex,
         councilProfiles,
         systemSnapshots,
+        compressedSummaries,
         isLoaded: true,
+        lastBackendSync,
+        backendSyncStatus: 'idle',
       });
+
+      tryLoadFromBackend(memoryEntries, chatHistory, arcIndex, councilProfiles, systemSnapshots);
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to load memory:', error);
       setState({
@@ -141,8 +186,54 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         arcIndex: [],
         councilProfiles: [],
         systemSnapshots: [],
+        compressedSummaries: [],
         isLoaded: true,
+        lastBackendSync: null,
+        backendSyncStatus: 'idle',
       });
+    }
+  };
+
+  const tryLoadFromBackend = async (
+    localMemory: PrimeMemoryEntry[],
+    localChat: ChatMessage[],
+    localArcs: ArcIndex[],
+    localCouncils: CouncilProfile[],
+    localSnapshots: SystemSnapshot[],
+  ) => {
+    try {
+      console.log('[PRIME-MEMORY] Attempting to load from backend...');
+      const snapshot = await trpcClient.system.getSystemSnapshot.query({
+        include: { memory: true, recent_threads: true, tabs: false, stats: false, skills: false, quests: false, forms: false, vault: false, council: false },
+      });
+
+      if (!snapshot) {
+        console.log('[PRIME-MEMORY] No backend snapshot available');
+        return;
+      }
+
+      const backendMemory: any[] = (snapshot as any).memory_entries || [];
+      const backendLTM: any[] = (snapshot as any).long_term_memory || [];
+
+      if (backendMemory.length > 0 && backendMemory.length > localMemory.length) {
+        console.log(`[PRIME-MEMORY] Backend has more memory entries (${backendMemory.length}) than local (${localMemory.length}), merging...`);
+        const localIds = new Set(localMemory.map(m => m.id));
+        const newEntries = backendMemory.filter((m: any) => !localIds.has(m.id));
+        if (newEntries.length > 0) {
+          const merged = [...localMemory, ...newEntries].sort((a, b) => b.lastUpdated - a.lastUpdated).slice(0, MAX_MEMORY_ENTRIES);
+          setState(prev => ({ ...prev, memoryEntries: merged }));
+          await saveMemoryEntries(merged);
+          console.log(`[PRIME-MEMORY] Merged ${newEntries.length} new entries from backend`);
+        }
+      }
+
+      if (backendLTM.length > 0) {
+        console.log(`[PRIME-MEMORY] Loaded ${backendLTM.length} long-term memory items from backend`);
+      }
+
+      console.log('[PRIME-MEMORY] Backend load complete');
+    } catch (error) {
+      console.log('[PRIME-MEMORY] Backend load skipped (not available):', (error as Error)?.message || 'unknown');
     }
   };
 
@@ -155,7 +246,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         })
         .slice(0, MAX_MEMORY_ENTRIES);
       await Storage.setItem(PRIME_MEMORY_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'memory entries');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'memory entries locally');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save memory entries:', error);
     }
@@ -167,7 +258,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, MAX_CHAT_HISTORY);
       await Storage.setItem(PRIME_CHAT_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'chat messages');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'chat messages locally');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save chat history:', error);
     }
@@ -179,7 +270,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         .sort((a, b) => b.lastEvent - a.lastEvent)
         .slice(0, MAX_ARC_INDEX);
       await Storage.setItem(PRIME_ARCS_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'arc indexes');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'arc indexes locally');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save arc index:', error);
     }
@@ -189,7 +280,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     try {
       const sorted = profiles.slice(0, MAX_COUNCIL_PROFILES);
       await Storage.setItem(PRIME_COUNCIL_PROFILES_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'council profiles');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'council profiles locally');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save council profiles:', error);
     }
@@ -201,11 +292,87 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, MAX_SNAPSHOTS);
       await Storage.setItem(PRIME_SNAPSHOTS_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'system snapshots');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'system snapshots locally');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save system snapshots:', error);
     }
   };
+
+  const saveCompressedSummaries = async (summaries: CompressedMemorySummary[]) => {
+    try {
+      await Storage.setItem(PRIME_COMPRESSED_KEY, JSON.stringify(summaries));
+      console.log('[PRIME-MEMORY] Saved', summaries.length, 'compressed summaries');
+    } catch (error) {
+      console.error('[PRIME-MEMORY] Failed to save compressed summaries:', error);
+    }
+  };
+
+  const compressMemory = useCallback(async () => {
+    const currentEntries = stateRef.current.memoryEntries;
+    if (currentEntries.length < COMPRESSION_THRESHOLD) {
+      console.log('[MEMORY-COMPRESS] Below threshold, no compression needed');
+      return;
+    }
+
+    console.log(`[MEMORY-COMPRESS] Compressing memory: ${currentEntries.length} entries -> target ${COMPRESSION_TARGET}`);
+
+    const sorted = [...currentEntries].sort((a, b) => {
+      const importanceWeight = (b.importance - a.importance) * 1000000000;
+      const recencyWeight = b.lastUpdated - a.lastUpdated;
+      return importanceWeight + recencyWeight;
+    });
+
+    const kept = sorted.slice(0, COMPRESSION_TARGET);
+    const compressed = sorted.slice(COMPRESSION_TARGET);
+
+    const groupedByType: Record<string, PrimeMemoryEntry[]> = {};
+    for (const entry of compressed) {
+      const key = entry.memoryType || 'general';
+      if (!groupedByType[key]) groupedByType[key] = [];
+      groupedByType[key].push(entry);
+    }
+
+    const summary: CompressedMemorySummary = {
+      id: `compressed-${Date.now()}`,
+      timestamp: Date.now(),
+      period: `${new Date(compressed[compressed.length - 1]?.timestamp || Date.now()).toLocaleDateString()} - ${new Date(compressed[0]?.timestamp || Date.now()).toLocaleDateString()}`,
+      keyFacts: [],
+      importantDecisions: [],
+      emotionalPatterns: [],
+      activeArcs: [],
+      compressedFrom: compressed.length,
+    };
+
+    for (const [type, entries] of Object.entries(groupedByType)) {
+      const summaryLine = `[${type.toUpperCase()}] ${entries.length} entries: ${entries.map(e => e.memoryKey).slice(0, 5).join(', ')}${entries.length > 5 ? ` (+${entries.length - 5} more)` : ''}`;
+
+      if (type === 'breakthrough' || type === 'board_decision') {
+        summary.importantDecisions.push(summaryLine);
+      } else if (type === 'health') {
+        summary.emotionalPatterns.push(summaryLine);
+      } else {
+        summary.keyFacts.push(summaryLine);
+      }
+    }
+
+    const activeArcNames = [...new Set(compressed.filter(e => e.arc).map(e => e.arc!))];
+    summary.activeArcs = activeArcNames;
+
+    const updatedSummaries = [summary, ...stateRef.current.compressedSummaries].slice(0, 50);
+
+    setState(prev => ({
+      ...prev,
+      memoryEntries: kept,
+      compressedSummaries: updatedSummaries,
+    }));
+
+    await Promise.all([
+      saveMemoryEntries(kept),
+      saveCompressedSummaries(updatedSummaries),
+    ]);
+
+    console.log(`[MEMORY-COMPRESS] Compressed ${compressed.length} entries into summary. Kept ${kept.length} entries.`);
+  }, []);
 
   const addMemoryEntry = useCallback(async (entry: Omit<PrimeMemoryEntry, 'id' | 'timestamp' | 'lastUpdated'>) => {
     const newEntry: PrimeMemoryEntry = {
@@ -220,9 +387,14 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       return { ...prev, memoryEntries: updated };
     });
     await saveMemoryEntries(updated);
+
+    if (updated.length >= COMPRESSION_THRESHOLD) {
+      setTimeout(() => compressMemory(), 500);
+    }
+
     console.log('[PRIME-MEMORY] Added memory entry:', newEntry.memoryType, '-', newEntry.memoryKey);
     return newEntry;
-  }, []);
+  }, [compressMemory]);
 
   const updateMemoryEntry = useCallback(async (id: string, updates: Partial<PrimeMemoryEntry>) => {
     let updated: PrimeMemoryEntry[] = [];
@@ -323,35 +495,82 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
   }, []);
 
   const getMemoryContext = useCallback((domains?: string[], maxItems: number = 30): string => {
-    let relevant = state.memoryEntries;
-    
+    const currentState = stateRef.current;
+    let relevant = currentState.memoryEntries;
+
     if (domains && domains.length > 0) {
       relevant = relevant.filter(e =>
-        e.arc && domains.includes(e.arc) ||
-        e.memoryType && domains.includes(e.memoryType) ||
-        e.tags && e.tags.some(t => domains.includes(t))
+        (e.arc && domains.includes(e.arc)) ||
+        (e.memoryType && domains.includes(e.memoryType)) ||
+        (e.tags && e.tags.some(t => domains.includes(t)))
       );
     }
-    
+
     const top = relevant
       .sort((a, b) => {
         if (a.importance !== b.importance) return b.importance - a.importance;
         return b.lastUpdated - a.lastUpdated;
       })
       .slice(0, maxItems);
-    
-    if (top.length === 0) {
+
+    const parts: string[] = [];
+
+    if (top.length > 0) {
+      const context = top.map(item => {
+        const age = Math.floor((Date.now() - item.lastUpdated) / (1000 * 60 * 60 * 24));
+        const ageStr = age === 0 ? 'today' : age === 1 ? 'yesterday' : `${age} days ago`;
+        return `[${item.memoryType.toUpperCase()}] ${item.memoryKey} (${ageStr}, importance: ${item.importance}/3)\n${item.memoryValue}`;
+      }).join('\n\n');
+      parts.push(`ACTIVE MEMORY (${top.length} items):\n\n${context}`);
+    }
+
+    if (currentState.compressedSummaries.length > 0) {
+      const compressedContext = currentState.compressedSummaries.slice(0, 5).map(s => {
+        const lines: string[] = [`[COMPRESSED PERIOD: ${s.period}] (${s.compressedFrom} entries summarized)`];
+        if (s.keyFacts.length > 0) lines.push(`Key Facts: ${s.keyFacts.join('; ')}`);
+        if (s.importantDecisions.length > 0) lines.push(`Decisions: ${s.importantDecisions.join('; ')}`);
+        if (s.emotionalPatterns.length > 0) lines.push(`Patterns: ${s.emotionalPatterns.join('; ')}`);
+        if (s.activeArcs.length > 0) lines.push(`Active Arcs: ${s.activeArcs.join(', ')}`);
+        return lines.join('\n');
+      }).join('\n\n');
+      parts.push(`COMPRESSED LONG-TERM MEMORY (${currentState.compressedSummaries.length} summaries):\n\n${compressedContext}`);
+    }
+
+    if (currentState.arcIndex.length > 0) {
+      const arcContext = currentState.arcIndex.slice(0, 10).map(a => {
+        const age = Math.floor((Date.now() - a.lastEvent) / (1000 * 60 * 60 * 24));
+        const ageStr = age === 0 ? 'today' : age === 1 ? 'yesterday' : `${age} days ago`;
+        return `• ${a.arcName} [${a.status.toUpperCase()}] (last: ${ageStr})${a.notes ? ` - ${a.notes}` : ''}`;
+      }).join('\n');
+      parts.push(`ARC INDEX (${currentState.arcIndex.length} arcs):\n${arcContext}`);
+    }
+
+    if (parts.length === 0) {
       return 'No long-term memory loaded. Fresh session.';
     }
-    
-    const context = top.map(item => {
-      const age = Math.floor((Date.now() - item.lastUpdated) / (1000 * 60 * 60 * 24));
-      const ageStr = age === 0 ? 'today' : age === 1 ? 'yesterday' : `${age} days ago`;
-      return `[${item.memoryType.toUpperCase()}] ${item.memoryKey} (${ageStr}, importance: ${item.importance}/3)\n${item.memoryValue}`;
+
+    const syncStatus = currentState.lastBackendSync
+      ? `Last backend sync: ${new Date(currentState.lastBackendSync).toLocaleString()}`
+      : 'Never synced to backend';
+
+    return `PRIME MEMORY SYSTEM [${syncStatus}]\n\n${parts.join('\n\n---\n\n')}`;
+  }, []);
+
+  const getCompressedMemoryContext = useCallback((): string => {
+    const currentState = stateRef.current;
+    if (currentState.compressedSummaries.length === 0) {
+      return 'No compressed memory available.';
+    }
+
+    return currentState.compressedSummaries.map(s => {
+      const lines: string[] = [`=== MEMORY PERIOD: ${s.period} (${s.compressedFrom} entries) ===`];
+      if (s.keyFacts.length > 0) lines.push(`Facts: ${s.keyFacts.join('; ')}`);
+      if (s.importantDecisions.length > 0) lines.push(`Decisions: ${s.importantDecisions.join('; ')}`);
+      if (s.emotionalPatterns.length > 0) lines.push(`Patterns: ${s.emotionalPatterns.join('; ')}`);
+      if (s.activeArcs.length > 0) lines.push(`Arcs: ${s.activeArcs.join(', ')}`);
+      return lines.join('\n');
     }).join('\n\n');
-    
-    return `PRIME MEMORY (${top.length} items):\n\n${context}`;
-  }, [state.memoryEntries]);
+  }, []);
 
   const clearAllMemory = useCallback(async () => {
     await Promise.all([
@@ -360,6 +579,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       Storage.removeItem(PRIME_ARCS_KEY),
       Storage.removeItem(PRIME_COUNCIL_PROFILES_KEY),
       Storage.removeItem(PRIME_SNAPSHOTS_KEY),
+      Storage.removeItem(PRIME_COMPRESSED_KEY),
     ]);
     setState({
       memoryEntries: [],
@@ -367,50 +587,129 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       arcIndex: [],
       councilProfiles: [],
       systemSnapshots: [],
+      compressedSummaries: [],
       isLoaded: true,
+      lastBackendSync: state.lastBackendSync,
+      backendSyncStatus: 'idle',
     });
     console.log('[PRIME-MEMORY] Cleared ALL Prime memory systems');
+  }, [state.lastBackendSync]);
+
+  const syncToBackend = useCallback(async (gameState: any, longTermMemory: any[], conversationThreads: any[]) => {
+    console.log('[BACKEND-SYNC] Starting backend synchronization...');
+    setState(prev => ({ ...prev, backendSyncStatus: 'syncing' }));
+
+    try {
+      const currentState = stateRef.current;
+
+      const result = await trpcClient.system.syncNow.mutate({
+        mode: 'omnisync',
+        reason: 'OmniSync from frontend',
+        include: {
+          memory: true,
+          vault: true,
+          stats: true,
+          skills: true,
+          quests: true,
+          council: true,
+        },
+        payload: {
+          gameState: gameState || null,
+          memoryEntries: currentState.memoryEntries,
+          chatHistory: currentState.chatHistory,
+          arcIndex: currentState.arcIndex,
+          councilProfiles: currentState.councilProfiles,
+          systemSnapshots: currentState.systemSnapshots,
+          longTermMemory: longTermMemory,
+          conversationThreads: conversationThreads,
+        },
+      });
+
+      const now = Date.now();
+      await Storage.setItem(PRIME_BACKEND_SYNC_KEY, now.toString());
+      setState(prev => ({
+        ...prev,
+        lastBackendSync: now,
+        backendSyncStatus: 'success',
+      }));
+
+      console.log('[BACKEND-SYNC] Backend sync complete:', result);
+
+      for (const entry of currentState.memoryEntries.filter(e => e.importance >= 2).slice(0, 20)) {
+        trpcClient.memory.upsertMemoryFact.mutate({
+          key: entry.memoryKey,
+          value: entry.memoryValue,
+          confidence: entry.importance / 3,
+          source: entry.memoryType,
+          scope: 'prime_memory',
+        }).catch(err => console.warn('[BACKEND-SYNC] Failed to sync memory fact:', err));
+      }
+
+      return result;
+    } catch (error) {
+      console.error('[BACKEND-SYNC] Backend sync failed:', error);
+      setState(prev => ({ ...prev, backendSyncStatus: 'error' }));
+      return null;
+    }
   }, []);
 
-  const omniSync = useCallback(async (gameStateSnapshot: Omit<SystemSnapshot, 'id' | 'timestamp'>) => {
+  const omniSync = useCallback(async (
+    gameStateSnapshot: Omit<SystemSnapshot, 'id' | 'timestamp'>,
+    fullGameState?: any,
+    longTermMemory?: any[],
+    conversationThreads?: any[],
+  ) => {
     console.log('[OMNI-SYNC] Initiating master synchronization...');
-    
-    await createSystemSnapshot(gameStateSnapshot);
-    
-    let currentState: MavisPrimeMemoryState | null = null;
-    setState(prev => {
-      currentState = prev;
-      return prev;
-    });
 
-    if (!currentState) return { success: false, timestamp: Date.now(), memorySynced: 0, chatSynced: 0, arcsSynced: 0, councilsSynced: 0, snapshotsSynced: 0 };
-    
-    const snap = currentState as MavisPrimeMemoryState;
+    await createSystemSnapshot(gameStateSnapshot);
+
+    const currentState = stateRef.current;
+
     await Promise.all([
-      saveMemoryEntries(snap.memoryEntries),
-      saveChatHistory(snap.chatHistory),
-      saveArcIndex(snap.arcIndex),
-      saveCouncilProfiles(snap.councilProfiles),
-      saveSystemSnapshots(snap.systemSnapshots),
+      saveMemoryEntries(currentState.memoryEntries),
+      saveChatHistory(currentState.chatHistory),
+      saveArcIndex(currentState.arcIndex),
+      saveCouncilProfiles(currentState.councilProfiles),
+      saveSystemSnapshots(currentState.systemSnapshots),
     ]);
-    
-    console.log('[OMNI-SYNC] Complete. All systems synchronized:');
-    console.log(`  - ${snap.memoryEntries.length} memory entries`);
-    console.log(`  - ${snap.chatHistory.length} chat messages`);
-    console.log(`  - ${snap.arcIndex.length} arcs`);
-    console.log(`  - ${snap.councilProfiles.length} council profiles`);
-    console.log(`  - ${snap.systemSnapshots.length} snapshots`);
-    
+
+    console.log('[OMNI-SYNC] Local save complete:');
+    console.log(`  - ${currentState.memoryEntries.length} memory entries`);
+    console.log(`  - ${currentState.chatHistory.length} chat messages`);
+    console.log(`  - ${currentState.arcIndex.length} arcs`);
+    console.log(`  - ${currentState.councilProfiles.length} council profiles`);
+    console.log(`  - ${currentState.systemSnapshots.length} snapshots`);
+
+    let backendResult = null;
+    try {
+      backendResult = await syncToBackend(
+        fullGameState || null,
+        longTermMemory || [],
+        conversationThreads || [],
+      );
+      console.log('[OMNI-SYNC] Backend sync result:', backendResult ? 'SUCCESS' : 'FAILED');
+    } catch (error) {
+      console.error('[OMNI-SYNC] Backend sync error (non-fatal):', error);
+    }
+
+    if (currentState.memoryEntries.length >= COMPRESSION_THRESHOLD) {
+      await compressMemory();
+    }
+
+    console.log('[OMNI-SYNC] Complete. All systems synchronized.');
+
     return {
       success: true,
       timestamp: Date.now(),
-      memorySynced: snap.memoryEntries.length,
-      chatSynced: snap.chatHistory.length,
-      arcsSynced: snap.arcIndex.length,
-      councilsSynced: snap.councilProfiles.length,
-      snapshotsSynced: snap.systemSnapshots.length,
+      memorySynced: currentState.memoryEntries.length,
+      chatSynced: currentState.chatHistory.length,
+      arcsSynced: currentState.arcIndex.length,
+      councilsSynced: currentState.councilProfiles.length,
+      snapshotsSynced: currentState.systemSnapshots.length,
+      backendSynced: !!backendResult,
+      backendSyncId: backendResult?.sync_id || null,
     };
-  }, [createSystemSnapshot]);
+  }, [createSystemSnapshot, syncToBackend, compressMemory]);
 
   return {
     ...state,
@@ -421,8 +720,11 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     updateCouncilProfile,
     createSystemSnapshot,
     getMemoryContext,
+    getCompressedMemoryContext,
     clearAllMemory,
     omniSync,
+    syncToBackend,
+    compressMemory,
     reloadMemory: loadAllMemory,
   };
 });
