@@ -25,7 +25,11 @@ export default function VaultCodexScreen() {
     importance: 'medium',
   });
 
+<<<<<<< HEAD
   const categories: { value: string; label: string }[] = [
+=======
+  const categories: Array<{ value: string; label: string }> = [
+>>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     { value: 'all', label: 'ALL' },
     { value: 'legal', label: 'LEGAL' },
     { value: 'business', label: 'BUSINESS' },
@@ -34,7 +38,11 @@ export default function VaultCodexScreen() {
     { value: 'achievement', label: 'ACHIEVEMENT' },
   ];
 
+<<<<<<< HEAD
   const importanceLevels: { value: VaultEntry['importance']; label: string }[] = [
+=======
+  const importanceLevels: Array<{ value: VaultEntry['importance']; label: string }> = [
+>>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     { value: 'low', label: 'LOW' },
     { value: 'medium', label: 'MEDIUM' },
     { value: 'high', label: 'HIGH' },

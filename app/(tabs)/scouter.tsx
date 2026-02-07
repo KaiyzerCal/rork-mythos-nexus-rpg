@@ -1,6 +1,10 @@
 import { useGame } from '@/contexts/GameContext';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Modal, Keyboard, TouchableWithoutFeedback, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+<<<<<<< HEAD
 import { Search, TrendingUp, X, User, Brain, Zap, Heart, Shield, Save } from "lucide-react-native";
+=======
+import { Search, TrendingUp, Edit2, X, User, Brain, Zap, Heart, Shield, Save } from 'lucide-react-native';
+>>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -386,7 +390,11 @@ export default function ScouterScreen() {
                 </View>
 
                 <View style={styles.inputGroup}>
+<<<<<<< HEAD
                   <Text style={styles.inputLabel}><User size={14} color="#08C284" /> What&apos;s their overall approach to life?</Text>
+=======
+                  <Text style={styles.inputLabel}><User size={14} color="#08C284" /> What's their overall approach to life?</Text>
+>>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
                   <TextInput
                     style={[styles.input, styles.textArea]}
                     value={q5}

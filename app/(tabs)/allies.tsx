@@ -1,6 +1,10 @@
 import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
+<<<<<<< HEAD
 import { Users, Heart, Shield, Swords } from 'lucide-react-native';
+=======
+import { Users, Heart, Shield, Swords, Star } from 'lucide-react-native';
+>>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

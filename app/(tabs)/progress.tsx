@@ -1,8 +1,14 @@
 import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
+<<<<<<< HEAD
 import { CheckCircle, Circle, Lock, TrendingUp } from "lucide-react-native";
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from "react-native";
+=======
+import { Sparkles, Scroll, CheckCircle, Circle, Lock, TrendingUp } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native';
+>>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Tab = 'skills' | 'quests' | 'achievements';
@@ -221,7 +227,11 @@ function QuestCard({ quest, onComplete }: QuestCardProps) {
 
         {quest.realWorldMapping && (
           <View style={styles.mappingBadge}>
+<<<<<<< HEAD
             <Text style={styles.mappingText}>ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€¦Ã‚Â½ {quest.realWorldMapping}</Text>
+=======
+            <Text style={styles.mappingText}>🌎 {quest.realWorldMapping}</Text>
+>>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
           </View>
         )}
       </LinearGradient>
