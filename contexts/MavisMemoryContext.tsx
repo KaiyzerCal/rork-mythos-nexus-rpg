@@ -1,5 +1,5 @@
 import createContextHook from '@nkzw/create-context-hook';
-import Storage from 'expo-sqlite/kv-store';
+import Storage from '@/utils/storage';
 import { useCallback, useEffect, useState } from 'react';
 
 export interface MemoryItem {

@@ -8,7 +8,7 @@ import { useMavisPrimeMemory } from '@/contexts/MavisPrimePersistentMemory';
 import { buildModuleContext } from '@/constants/agi-modules';
 
 import { useRorkAgent } from '@rork-ai/toolkit-sdk';
-import Storage from 'expo-sqlite/kv-store';
+import Storage from '@/utils/storage';
 import { 
   MAVIS_MODES, 
   BOARD_TITANS, 
