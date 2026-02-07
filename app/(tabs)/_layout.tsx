@@ -74,7 +74,7 @@ export default function TabLayout() {
       <Tabs.Screen name="progress" options={{ href: null }} />
       <Tabs.Screen name="codex" options={{ href: null }} />
       <Tabs.Screen name="character" options={{ href: null }} />
-      <Tabs.Screen name="forms" options={{ href: null }} />
+
     </Tabs>
   );
 }
