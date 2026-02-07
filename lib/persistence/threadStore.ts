@@ -1,4 +1,4 @@
-﻿import * as SQLite from "expo-sqlite";
+import * as SQLite from "expo-sqlite";
 
 const db = SQLite.openDatabaseSync("mavis.db");
 

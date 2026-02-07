@@ -16,17 +16,17 @@ export default function RitualsScreen() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'meditation':
-        return 'ðŸ§˜';
+        return '🧘';
       case 'training':
-        return 'ðŸ’ª';
+        return '💪';
       case 'study':
-        return 'ðŸ“š';
+        return '📚';
       case 'social':
-        return 'ðŸ‘¥';
+        return '👥';
       case 'creation':
-        return 'âœï¸';
+        return '✍️';
       default:
-        return 'âš¡';
+        return '⚡';
     }
   };
 
@@ -426,3 +426,5 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+
+
