@@ -1,5 +1,7 @@
-import { Home, Flame, Target, Users, Cpu } from "lucide-react-native";
+﻿import { Home, Flame, Target, Users, Cpu } from "lucide-react-native";
 import React from "react";
+import { initThreadStore } from "../../lib/persistence/threadStore";
+initThreadStore();
 
 import { Tabs } from "expo-router";
 import { installRorkUnifiedPersistence } from "../../lib/rork-unified-persistence";
@@ -73,6 +75,7 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
 
 
 
