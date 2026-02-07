@@ -16,7 +16,6 @@ export default function RitualsScreen() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'meditation':
-<<<<<<< HEAD
         return 'ðŸ§˜';
       case 'training':
         return 'ðŸ’ª';
@@ -28,19 +27,6 @@ export default function RitualsScreen() {
         return 'âœï¸';
       default:
         return 'âš¡';
-=======
-        return '🧘';
-      case 'training':
-        return '💪';
-      case 'study':
-        return '📚';
-      case 'social':
-        return '👥';
-      case 'creation':
-        return '✍️';
-      default:
-        return '⚡';
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     }
   };
 
@@ -91,11 +77,7 @@ export default function RitualsScreen() {
             style={styles.progressCardGradient}
           >
             <View style={styles.progressHeader}>
-<<<<<<< HEAD
               <Text style={styles.progressTitle}>TODAY&apos;S PROGRESS</Text>
-=======
-              <Text style={styles.progressTitle}>TODAY'S PROGRESS</Text>
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
               <View style={styles.progressStats}>
                 <Text style={styles.progressValue}>{totalCompleted}/{totalRituals}</Text>
               </View>

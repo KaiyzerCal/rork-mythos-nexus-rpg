@@ -38,21 +38,13 @@ export default function TasksScreen() {
 
   const allSkills = useMemo(() => {
     const skills = gameState.skillTrees.map(s => ({ id: s.id, name: s.name, isParent: true }));
-<<<<<<< HEAD
     const subSkills: { id: string; name: string; isParent: false; parentId: string }[] = [];
-=======
-    const subSkills: Array<{ id: string; name: string; isParent: false; parentId: string }> = [];
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     
     Object.entries(gameState.skillSubTrees || {}).forEach(([parentId, subTree]) => {
       subTree.forEach(sub => {
         subSkills.push({
           id: sub.id,
-<<<<<<< HEAD
           name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${sub.name}`,
-=======
-          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} → ${sub.name}`,
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
           isParent: false,
           parentId,
         });
@@ -129,12 +121,8 @@ export default function TasksScreen() {
     setModalVisible(true);
   };
 
-<<<<<<< HEAD
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _handleToggleArchive = (task: Task) => {
-=======
-  const handleToggleArchive = (task: Task) => {
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     updateTask(task.id, {
       status: task.status === 'archived' ? 'active' : 'archived',
     });
@@ -158,11 +146,7 @@ export default function TasksScreen() {
       const parentSkill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
       const subSkill = gameState.skillSubTrees?.[task.linkedSkillId]?.find(s => s.id === task.linkedSubSkillId);
       if (parentSkill && subSkill) {
-<<<<<<< HEAD
         return `${parentSkill.name} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${subSkill.name}`;
-=======
-        return `${parentSkill.name} → ${subSkill.name}`;
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
       }
     } else {
       const skill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
@@ -940,8 +924,4 @@ const styles = StyleSheet.create({
     fontWeight: '700' as const,
     color: '#FFFFFF',
   },
-<<<<<<< HEAD
 });
-=======
-});
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e

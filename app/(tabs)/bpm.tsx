@@ -2,11 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, Heart, TrendingUp, Minus, Plus } from 'lucide-react-native';
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-=======
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Animated } from 'react-native';
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BPMTrackerScreen() {
@@ -204,11 +200,7 @@ function SessionCard({ session }: SessionCardProps) {
           <Text style={styles.sessionBPM}>{session.bpm}</Text>
         </View>
         <Text style={styles.sessionTime}>
-<<<<<<< HEAD
           {dateStr} â€¢ {timeStr}
-=======
-          {dateStr} • {timeStr}
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
         </Text>
       </View>
       <Text style={styles.sessionForm}>{session.form}</Text>

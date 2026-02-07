@@ -40,14 +40,9 @@ ios/
 android/
 .rork
 .env
-<<<<<<< HEAD
 rork-eslint.config.js
 *.bak.*
-=======
-rork-eslint.config.js
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
-
-# local backups
-*.bak.*
-**/*.bak.*
-
+node_modules/
+android/app/build/
+android/app/.cxx/
+*.apk

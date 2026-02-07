@@ -33,11 +33,7 @@ export default function CouncilsScreen() {
   const getMemberContext = (member: typeof councilMembers[0]) => {
     const { 
       stats, identity, currentForm, currentBPM, energySystems, transformations, 
-<<<<<<< HEAD
       quests, vaultEntries, realWorldModules, councils, skillTrees, 
-=======
-      quests, vaultEntries, realWorldModules, councils, skillTrees, skillSubTrees,
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
       dailyRituals, inventoryV2, roster, allies, currencies, currentFloor, gpr, pvpRating, arcStory,
       tasks, skillProficiency
     } = gameState;
@@ -47,12 +43,8 @@ export default function CouncilsScreen() {
     const todayRituals = dailyRituals.filter(r => !r.completed);
     const completedRituals = dailyRituals.filter(r => r.completed);
     const unlockedSkills = skillTrees.filter(s => s.unlocked);
-<<<<<<< HEAD
     const _mainCouncils = councils;
 void _mainCouncils;
-=======
-    const mainCouncils = councils;
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     const topAllies = allies;
     const allVault = vaultEntries;
     const equippedItems = inventoryV2.filter(i => i.slot !== 'Storage');
@@ -61,21 +53,14 @@ void _mainCouncils;
     
     const systemContext = `=== COMPREHENSIVE SYSTEM CONTEXT ===
 
-<<<<<<< HEAD
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¹ IDENTITY:
 - Name: ${identity.inscribedName}
 - Titles: ${identity.titles.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
-=======
-📋 IDENTITY:
-- Name: ${identity.inscribedName}
-- Titles: ${identity.titles.join(' • ')}
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 - Species: ${identity.speciesLineage[identity.speciesLineage.length - 1]}
 - Territory: ${identity.territory.class}
 - Tower Floors: ${identity.territory.towerFloorsInfluence}
 - Arc Story: ${arcStory || 'Unknown'}
 
-<<<<<<< HEAD
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ CURRENT STATUS:
 - Level ${stats.level} | Rank ${stats.rank} | XP: ${stats.xp}/${stats.xpToNextLevel}
 - Current Form: ${currentForm} (${currentBPM} BPM - energetic vibration, NOT heart rate)
@@ -91,33 +76,12 @@ ${currencies.map(c => `- ${c.icon} ${c.name}: ${c.amount}`).join('\n')}
 ${energySystems.map(e => `- ${e.type}: ${e.current}/${e.max} (${e.status}) - ${e.description}`).join('\n')}
 
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ TRANSFORMATIONS (${transformations.length} forms unlocked):
-=======
-⚡ CURRENT STATUS:
-- Level ${stats.level} | Rank ${stats.rank} | XP: ${stats.xp}/${stats.xpToNextLevel}
-- Current Form: ${currentForm} (${currentBPM} BPM - energetic vibration, NOT heart rate)
-- Fatigue: ${stats.fatigue}/100 | Full Cowl Sync: ${stats.fullCowlSync}% | Codex Integrity: ${stats.codexIntegrity}%
-- Stats: STR ${stats.STR} • AGI ${stats.AGI} • VIT ${stats.VIT} • INT ${stats.INT} • WIS ${stats.WIS} • CHA ${stats.CHA} • LCK ${stats.LCK}
-- Tower Floor: ${currentFloor} | GPR: ${gpr} | PVP Rating: ${pvpRating}
-- Aura Power: ${stats.auraPower}
-
-💰 CURRENCIES:
-${currencies.map(c => `- ${c.icon} ${c.name}: ${c.amount}`).join('\n')}
-
-🌀 ENERGY SYSTEMS (${energySystems.length} total):
-${energySystems.map(e => `- ${e.type}: ${e.current}/${e.max} (${e.status}) - ${e.description}`).join('\n')}
-
-🔥 TRANSFORMATIONS (${transformations.length} forms unlocked):
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 ${transformations.slice(0, 8).map(t => {
   return `- ${t.name} (${t.bpmRange} BPM) - ${t.category || 'Transformation'} - ${t.description || 'No description'}`;
 }).join('\n')}
 ${transformations.length > 8 ? `... and ${transformations.length - 8} more forms` : ''}
 
-<<<<<<< HEAD
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â SKILLS & ABILITIES (${unlockedSkills.length} unlocked):
-=======
-⚔️ SKILLS & ABILITIES (${unlockedSkills.length} unlocked):
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 ${unlockedSkills.slice(0, 10).map(s => {
   const proficiencyKey = s.id;
   const proficiency = skillProficiency?.[proficiencyKey] || 0;
@@ -125,19 +89,11 @@ ${unlockedSkills.slice(0, 10).map(s => {
 }).join('\n')}
 ${unlockedSkills.length > 10 ? `... and ${unlockedSkills.length - 10} more skills` : ''}
 
-<<<<<<< HEAD
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â½ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ ACTIVE QUESTS (${activeQuests.length}):
 ${activeQuests.map(q => `- ${q.title}: ${q.progress ? `${q.progress.current}/${q.progress.target}` : 'ongoing'} (${q.xpReward} XP)${q.realWorldMapping ? ` - ${q.realWorldMapping}` : ''}`).join('\n')}
 ${completedQuests.length > 0 ? `\nCompleted: ${completedQuests.length} quests` : ''}
 
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ TASKS & HABITS (${allTasks.length} total):
-=======
-🎯 ACTIVE QUESTS (${activeQuests.length}):
-${activeQuests.map(q => `- ${q.title}: ${q.progress ? `${q.progress.current}/${q.progress.target}` : 'ongoing'} (${q.xpReward} XP)${q.realWorldMapping ? ` - ${q.realWorldMapping}` : ''}`).join('\n')}
-${completedQuests.length > 0 ? `\nCompleted: ${completedQuests.length} quests` : ''}
-
-✅ TASKS & HABITS (${allTasks.length} total):
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 ${allTasks.slice(0, 8).map(t => {
   const linkedSkill = t.linkedSkillId ? skillTrees.find(s => s.id === t.linkedSkillId) : null;
   const skillInfo = linkedSkill ? ` [Linked: ${linkedSkill.name}${t.skillXpReward ? ` +${t.skillXpReward} Prof` : ''}]` : '';
@@ -145,26 +101,17 @@ ${allTasks.slice(0, 8).map(t => {
 }).join('\n')}
 ${allTasks.length > 8 ? `... and ${allTasks.length - 8} more tasks` : ''}
 
-<<<<<<< HEAD
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ TODAY'S RITUALS (${todayRituals.length} pending):
 ${todayRituals.map(r => `- ${r.name} (${r.type}): +${r.xpReward} XP - ${r.description}`).join('\n')}
 ${completedRituals.length > 0 ? `\nCompleted Today: ${completedRituals.length} rituals` : ''}
 
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¹Ã…â€œÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ COUNCILS & ALLIES:
-=======
-📅 TODAY'S RITUALS (${todayRituals.length} pending):
-${todayRituals.map(r => `- ${r.name} (${r.type}): +${r.xpReward} XP - ${r.description}`).join('\n')}
-${completedRituals.length > 0 ? `\nCompleted Today: ${completedRituals.length} rituals` : ''}
-
-👥 COUNCILS & ALLIES:
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 Council Members (${councilMembers.length} total):
 ${councilMembers.map(c => `- ${c.name} (${c.class}): ${c.role} - ${c.specialty || 'General'} - ${c.notes}`).join('\n')}
 
 Allies (${allies.length} total):
 ${topAllies.map(a => `- ${a.name} (${a.relationship}) Lv.${a.level} - ${a.specialty} [Affinity: ${a.affinity}%]`).join('\n')}
 
-<<<<<<< HEAD
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â½ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ EQUIPPED ITEMS (${equippedItems.length}):
 ${equippedItems.map(i => `- [${i.slot}] ${i.name} (${i.tier}) - ${i.description}`).join('\n')}
 
@@ -172,41 +119,23 @@ ${equippedItems.map(i => `- [${i.slot}] ${i.name} (${i.tier}) - ${i.description}
 ${allRoster.map((r, idx) => `#${idx + 1} ${r.display} (${r.role}) ${r.rank} Lv.${r.level} | GPR: ${r.gpr} | PvP: ${(r.pvp/1000).toFixed(1)} | ${r.jjkGrade} ${r.opTier} | ${r.influence}${r.notes ? ` - ${r.notes}` : ''}`).join('\n')}
 
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ COMPLETE VAULT CODEX (${allVault.length} entries):
-=======
-🎒 EQUIPPED ITEMS (${equippedItems.length}):
-${equippedItems.map(i => `- [${i.slot}] ${i.name} (${i.tier}) - ${i.description}`).join('\n')}
-
-📊 COMPLETE RANKINGS/ROSTER (${allRoster.length} tracked):
-${allRoster.map((r, idx) => `#${idx + 1} ${r.display} (${r.role}) ${r.rank} Lv.${r.level} | GPR: ${r.gpr} | PvP: ${(r.pvp/1000).toFixed(1)} | ${r.jjkGrade} ${r.opTier} | ${r.influence}${r.notes ? ` - ${r.notes}` : ''}`).join('\n')}
-
-🔒 COMPLETE VAULT CODEX (${allVault.length} entries):
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 ${allVault.map(v => {
   const date = new Date(v.timestamp).toLocaleDateString();
   return `- [${v.category.toUpperCase()}] ${v.title} (${v.importance.toUpperCase()}) - ${date}\n  Content: ${v.content}`;
 }).join('\n\n')}
 
-<<<<<<< HEAD
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¹ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â REAL-WORLD MODULES:
-=======
-🏋️ REAL-WORLD MODULES:
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 Fitness:
   - Weekly Target: ${realWorldModules.fitness.habitTargets.weekSessions} sessions
   - Recovery Days: ${realWorldModules.fitness.habitTargets.recoveryDays}
   - YMCA Credit: ${realWorldModules.fitness.ymcaBootcampCredit.perClassXP} XP/class (${realWorldModules.fitness.ymcaBootcampCredit.capWeek} weekly cap)
 
 Business:
-<<<<<<< HEAD
   - Nodes: ${realWorldModules.business.nodes.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
-=======
-  - Nodes: ${realWorldModules.business.nodes.join(' • ')}
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
   - Daily Rule: ${realWorldModules.business.dailyRule}
 
 Legal Case:
   - ${realWorldModules.legalCase.coreStory}
-<<<<<<< HEAD
   - Evidence: ${realWorldModules.legalCase.evidenceTypes.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
   - Next Steps: ${realWorldModules.legalCase.nextSteps.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
 
@@ -215,16 +144,6 @@ Relationships:
   - Safety Rules: ${realWorldModules.relationships.safetyRules.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
 
 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ KEY NOTES:
-=======
-  - Evidence: ${realWorldModules.legalCase.evidenceTypes.join(' • ')}
-  - Next Steps: ${realWorldModules.legalCase.nextSteps.join(' • ')}
-
-Relationships:
-  - Rizz Aura: ${realWorldModules.relationships.rizzAuraEnabled ? 'ACTIVE' : 'inactive'}
-  - Safety Rules: ${realWorldModules.relationships.safetyRules.join(' • ')}
-
-💡 KEY NOTES:
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 - BPM = ENERGETIC VIBRATION (not physical heart rate). Each transformation has a BPM range representing consciousness frequency.
 - Full Cowl = Black Heart Pulse Modulation - signature technique for precise BPM synchronization.
 - All tabs are interconnected: Character, Transformations, Energy, Quests, Tasks, Skills, Councils, Inventory, Rituals, Vault, Tower, Rankings, Progress, and Mavis chat.
@@ -244,12 +163,7 @@ CRITICAL: Keep ALL responses concise and condensed to EXACTLY 4 PARAGRAPHS MAXIM
     
     return systemContext;
   };
-<<<<<<< HEAD
   const [, setAnalyzingGrowth] = useState(false);
-=======
-
-  const [analyzingGrowth, setAnalyzingGrowth] = useState(false);
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
 
   const analyzeConversationGrowth = async (conversationHistory: string, memberName: string) => {
     try {

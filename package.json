@@ -1,6 +1,5 @@
 {
   "name": "expo-app",
-<<<<<<< HEAD
   "packageManager": "npm@10.2.0",
   "main": "expo-router/entry",
   "version": "1.0.0",
@@ -11,15 +10,6 @@
     "lint": "expo lint",
     "android": "expo run:android",
     "ios": "expo run:ios"
-=======
-  "main": "expo-router/entry",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "bunx rork start -p fnr42tjhjpqit8s23rbh8 --tunnel",
-    "start-web": "bunx rork start -p fnr42tjhjpqit8s23rbh8 --web --tunnel",
-    "start-web-dev": "DEBUG=expo* bunx rork start -p fnr42tjhjpqit8s23rbh8 --web --tunnel",
-    "lint": "expo lint"
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -36,10 +26,7 @@
     "expo": "^54.0.20",
     "expo-blur": "~15.0.7",
     "expo-constants": "~18.0.10",
-<<<<<<< HEAD
     "expo-dev-client": "~6.0.20",
-=======
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     "expo-font": "~14.0.9",
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.10",
@@ -49,10 +36,7 @@
     "expo-location": "~19.0.7",
     "expo-router": "~6.0.13",
     "expo-splash-screen": "~31.0.10",
-<<<<<<< HEAD
     "expo-sqlite": "^16.0.10",
-=======
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
     "expo-status-bar": "~3.0.8",
     "expo-symbols": "~1.0.7",
     "expo-system-ui": "~6.0.8",
@@ -80,8 +64,4 @@
     "typescript": "~5.9.2"
   },
   "private": true
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e

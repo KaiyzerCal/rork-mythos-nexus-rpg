@@ -39,7 +39,6 @@
     ],
     "experiments": {
       "typedRoutes": true
-<<<<<<< HEAD
     },
     "extra": {
       "router": {
@@ -51,8 +50,3 @@
     }
   }
 }
-=======
-    }
-  }
-}
->>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
