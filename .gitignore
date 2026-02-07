@@ -46,3 +46,8 @@ rork-eslint.config.js
 =======
 rork-eslint.config.js
 >>>>>>> d22fac4cbc76f066be704c062f82130f6208762e
+
+# local backups
+*.bak.*
+**/*.bak.*
+
