@@ -46,3 +46,10 @@ node_modules/
 android/app/build/
 android/app/.cxx/
 *.apk
+# --- local junk / generated ---
+node_modules/
+android/app/build/
+android/app/.cxx/
+*.apk
+*.bak.*
+
