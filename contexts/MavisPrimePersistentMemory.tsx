@@ -1,4 +1,4 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Storage from 'expo-sqlite/kv-store';
 import { useCallback, useEffect, useState } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 
@@ -105,11 +105,11 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         storedCouncils,
         storedSnapshots,
       ] = await Promise.all([
-        AsyncStorage.getItem(PRIME_MEMORY_KEY),
-        AsyncStorage.getItem(PRIME_CHAT_KEY),
-        AsyncStorage.getItem(PRIME_ARCS_KEY),
-        AsyncStorage.getItem(PRIME_COUNCIL_PROFILES_KEY),
-        AsyncStorage.getItem(PRIME_SNAPSHOTS_KEY),
+        Storage.getItem(PRIME_MEMORY_KEY),
+        Storage.getItem(PRIME_CHAT_KEY),
+        Storage.getItem(PRIME_ARCS_KEY),
+        Storage.getItem(PRIME_COUNCIL_PROFILES_KEY),
+        Storage.getItem(PRIME_SNAPSHOTS_KEY),
       ]);
 
       const memoryEntries: PrimeMemoryEntry[] = storedMemory ? JSON.parse(storedMemory) : [];
@@ -154,7 +154,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
           return b.lastUpdated - a.lastUpdated;
         })
         .slice(0, MAX_MEMORY_ENTRIES);
-      await AsyncStorage.setItem(PRIME_MEMORY_KEY, JSON.stringify(sorted));
+      await Storage.setItem(PRIME_MEMORY_KEY, JSON.stringify(sorted));
       console.log('[PRIME-MEMORY] Saved', sorted.length, 'memory entries');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save memory entries:', error);
@@ -166,7 +166,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       const sorted = chat
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, MAX_CHAT_HISTORY);
-      await AsyncStorage.setItem(PRIME_CHAT_KEY, JSON.stringify(sorted));
+      await Storage.setItem(PRIME_CHAT_KEY, JSON.stringify(sorted));
       console.log('[PRIME-MEMORY] Saved', sorted.length, 'chat messages');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save chat history:', error);
@@ -178,7 +178,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       const sorted = arcs
         .sort((a, b) => b.lastEvent - a.lastEvent)
         .slice(0, MAX_ARC_INDEX);
-      await AsyncStorage.setItem(PRIME_ARCS_KEY, JSON.stringify(sorted));
+      await Storage.setItem(PRIME_ARCS_KEY, JSON.stringify(sorted));
       console.log('[PRIME-MEMORY] Saved', sorted.length, 'arc indexes');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save arc index:', error);
@@ -188,7 +188,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
   const saveCouncilProfiles = async (profiles: CouncilProfile[]) => {
     try {
       const sorted = profiles.slice(0, MAX_COUNCIL_PROFILES);
-      await AsyncStorage.setItem(PRIME_COUNCIL_PROFILES_KEY, JSON.stringify(sorted));
+      await Storage.setItem(PRIME_COUNCIL_PROFILES_KEY, JSON.stringify(sorted));
       console.log('[PRIME-MEMORY] Saved', sorted.length, 'council profiles');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save council profiles:', error);
@@ -200,7 +200,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       const sorted = snapshots
         .sort((a, b) => b.timestamp - a.timestamp)
         .slice(0, MAX_SNAPSHOTS);
-      await AsyncStorage.setItem(PRIME_SNAPSHOTS_KEY, JSON.stringify(sorted));
+      await Storage.setItem(PRIME_SNAPSHOTS_KEY, JSON.stringify(sorted));
       console.log('[PRIME-MEMORY] Saved', sorted.length, 'system snapshots');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save system snapshots:', error);
@@ -355,11 +355,11 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
 
   const clearAllMemory = useCallback(async () => {
     await Promise.all([
-      AsyncStorage.removeItem(PRIME_MEMORY_KEY),
-      AsyncStorage.removeItem(PRIME_CHAT_KEY),
-      AsyncStorage.removeItem(PRIME_ARCS_KEY),
-      AsyncStorage.removeItem(PRIME_COUNCIL_PROFILES_KEY),
-      AsyncStorage.removeItem(PRIME_SNAPSHOTS_KEY),
+      Storage.removeItem(PRIME_MEMORY_KEY),
+      Storage.removeItem(PRIME_CHAT_KEY),
+      Storage.removeItem(PRIME_ARCS_KEY),
+      Storage.removeItem(PRIME_COUNCIL_PROFILES_KEY),
+      Storage.removeItem(PRIME_SNAPSHOTS_KEY),
     ]);
     setState({
       memoryEntries: [],

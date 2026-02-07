@@ -1,5 +1,5 @@
 import createContextHook from '@nkzw/create-context-hook';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Storage from 'expo-sqlite/kv-store';
 import { useCallback, useEffect, useState } from 'react';
 import type {
   EnergyLevel,
@@ -209,14 +209,14 @@ export const [GameProvider, useGame] = createContextHook(() => {
   useEffect(() => {
     const loadGameState = async () => {
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
+        const stored = await Storage.getItem(STORAGE_KEY);
         if (stored) {
           let parsed;
           try {
             parsed = JSON.parse(stored);
           } catch (parseError) {
             console.error('[GAME_CONTEXT] Failed to parse game state, clearing corrupted data:', parseError);
-            await AsyncStorage.removeItem(STORAGE_KEY);
+            await Storage.removeItem(STORAGE_KEY);
             setGameState(prev => ({ ...prev, councils: ALL_COUNCIL_MEMBERS }));
             setIsLoading(false);
             return;
@@ -267,7 +267,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
   const saveGameState = useCallback(async (newState: GameState) => {
     setGameState(newState);
     try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newState));
+      await Storage.setItem(STORAGE_KEY, JSON.stringify(newState));
       console.log('Game state saved successfully');
     } catch (error) {
       console.error('Failed to save game state:', error);

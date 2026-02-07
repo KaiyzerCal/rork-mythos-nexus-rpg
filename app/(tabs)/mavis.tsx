@@ -8,7 +8,7 @@ import { useMavisPrimeMemory } from '@/contexts/MavisPrimePersistentMemory';
 import { buildModuleContext } from '@/constants/agi-modules';
 
 import { useRorkAgent } from '@rork-ai/toolkit-sdk';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Storage from 'expo-sqlite/kv-store';
 import { 
   MAVIS_MODES, 
   BOARD_TITANS, 
@@ -254,9 +254,9 @@ RELATIONSHIPS MODULE:
       try {
         console.log('[MAVIS-PRIME] Loading chat history and state...');
         const [storedHistory, storedMode, storedBoardState] = await Promise.all([
-          AsyncStorage.getItem(MAVIS_CHAT_HISTORY_KEY),
-          AsyncStorage.getItem(MAVIS_MODE_KEY),
-          AsyncStorage.getItem(MAVIS_BOARD_STATE_KEY),
+          Storage.getItem(MAVIS_CHAT_HISTORY_KEY),
+          Storage.getItem(MAVIS_MODE_KEY),
+          Storage.getItem(MAVIS_BOARD_STATE_KEY),
         ]);
         
         if (storedMode) {
@@ -283,7 +283,7 @@ RELATIONSHIPS MODULE:
             }
           } catch (parseError) {
             console.error('[MAVIS-PRIME] Failed to parse chat history, clearing corrupted data:', parseError);
-            await AsyncStorage.removeItem(MAVIS_CHAT_HISTORY_KEY);
+            await Storage.removeItem(MAVIS_CHAT_HISTORY_KEY);
           }
         }
       } catch (error) {
@@ -319,7 +319,7 @@ RELATIONSHIPS MODULE:
       const validMessages = messages.filter(msg => {
         return msg && msg.id && msg.role && msg.parts && Array.isArray(msg.parts);
       });
-      AsyncStorage.setItem(MAVIS_CHAT_HISTORY_KEY, JSON.stringify(validMessages)).catch(err => {
+      Storage.setItem(MAVIS_CHAT_HISTORY_KEY, JSON.stringify(validMessages)).catch(err => {
         console.error('[MAVIS-PRIME] Failed to save chat history:', err);
       });
       if (isNearBottom) {
@@ -426,7 +426,7 @@ RELATIONSHIPS MODULE:
 
   const switchMode = async (newMode: string) => {
     setCurrentMode(newMode);
-    await AsyncStorage.setItem(MAVIS_MODE_KEY, newMode);
+    await Storage.setItem(MAVIS_MODE_KEY, newMode);
     const mode = MAVIS_MODES[newMode.toUpperCase()] || MAVIS_MODES.PRIME;
     setMessages(prev => [...prev, {
       id: `msg-mode-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -444,12 +444,12 @@ RELATIONSHIPS MODULE:
     switch(command) {
       case 'SUMMON_BOARD':
         setBoardActive(true);
-        await AsyncStorage.setItem(MAVIS_BOARD_STATE_KEY, 'true');
+        await Storage.setItem(MAVIS_BOARD_STATE_KEY, 'true');
         responseText = `👑 BOARD TITANS SUMMONED 👑\n\nActivating multi-perspective strategic analysis:\n${BOARD_TITANS.map(t => `• ${t.label} - ${t.domain}`).join('\n')}\n\nAll Titans are now online and ready to provide synthesis on your queries.`;
         break;
       case 'EXIT_BOARD':
         setBoardActive(false);
-        await AsyncStorage.setItem(MAVIS_BOARD_STATE_KEY, 'false');
+        await Storage.setItem(MAVIS_BOARD_STATE_KEY, 'false');
         responseText = 'Board Titans dismissed. Returning to MAVIS-PRIME solo voice.';
         break;
       case 'CONSULT_COUNCIL':
@@ -555,7 +555,7 @@ RELATIONSHIPS MODULE:
           text: 'Clear Chat',
           style: 'destructive',
           onPress: async () => {
-            await AsyncStorage.removeItem(MAVIS_CHAT_HISTORY_KEY);
+            await Storage.removeItem(MAVIS_CHAT_HISTORY_KEY);
             const memoryCount = primeMemory.memoryEntries.length;
             const councilCount = primeMemory.councilProfiles.length;
             setMessages([{

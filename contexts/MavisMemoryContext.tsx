@@ -1,5 +1,5 @@
 import createContextHook from '@nkzw/create-context-hook';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import Storage from 'expo-sqlite/kv-store';
 import { useCallback, useEffect, useState } from 'react';
 
 export interface MemoryItem {
@@ -53,8 +53,8 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
     try {
       console.log('[MAVIS-MEMORY] Loading memory items and conversation threads...');
       const [storedMemory, storedConversations] = await Promise.all([
-        AsyncStorage.getItem(MAVIS_MEMORY_KEY),
-        AsyncStorage.getItem(MAVIS_CONVERSATIONS_KEY),
+        Storage.getItem(MAVIS_MEMORY_KEY),
+        Storage.getItem(MAVIS_CONVERSATIONS_KEY),
       ]);
       
       let memoryItems: MemoryItem[] = [];
@@ -66,7 +66,7 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
           console.log('[MAVIS-MEMORY] Loaded', memoryItems.length, 'memory items');
         } catch (parseError) {
           console.error('[MAVIS-MEMORY] Failed to parse memory items, clearing corrupted data:', parseError);
-          await AsyncStorage.removeItem(MAVIS_MEMORY_KEY);
+          await Storage.removeItem(MAVIS_MEMORY_KEY);
           memoryItems = [];
         }
       }
@@ -77,7 +77,7 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
           console.log('[MAVIS-MEMORY] Loaded', conversationThreads.length, 'conversation threads');
         } catch (parseError) {
           console.error('[MAVIS-MEMORY] Failed to parse conversation threads, clearing corrupted data:', parseError);
-          await AsyncStorage.removeItem(MAVIS_CONVERSATIONS_KEY);
+          await Storage.removeItem(MAVIS_CONVERSATIONS_KEY);
           conversationThreads = [];
         }
       }
@@ -104,7 +104,7 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
         })
         .slice(0, MAX_MEMORY_ITEMS);
       
-      await AsyncStorage.setItem(MAVIS_MEMORY_KEY, JSON.stringify(sortedItems));
+      await Storage.setItem(MAVIS_MEMORY_KEY, JSON.stringify(sortedItems));
       console.log('[MAVIS-MEMORY] Saved', sortedItems.length, 'memory items');
     } catch (error) {
       console.error('[MAVIS-MEMORY] Failed to save memory:', error);
@@ -117,7 +117,7 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
         .sort((a, b) => b.lastMessageAt - a.lastMessageAt)
         .slice(0, MAX_CONVERSATION_THREADS);
       
-      await AsyncStorage.setItem(MAVIS_CONVERSATIONS_KEY, JSON.stringify(sortedThreads));
+      await Storage.setItem(MAVIS_CONVERSATIONS_KEY, JSON.stringify(sortedThreads));
       console.log('[MAVIS-MEMORY] Saved', sortedThreads.length, 'conversation threads');
     } catch (error) {
       console.error('[MAVIS-MEMORY] Failed to save conversation threads:', error);
@@ -242,8 +242,8 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
 
   const clearAllMemory = useCallback(async () => {
     await Promise.all([
-      AsyncStorage.removeItem(MAVIS_MEMORY_KEY),
-      AsyncStorage.removeItem(MAVIS_CONVERSATIONS_KEY),
+      Storage.removeItem(MAVIS_MEMORY_KEY),
+      Storage.removeItem(MAVIS_CONVERSATIONS_KEY),
     ]);
     setState({ memoryItems: [], conversationThreads: [], isLoaded: true });
     console.log('[MAVIS-MEMORY] Cleared all memory and conversation threads');
