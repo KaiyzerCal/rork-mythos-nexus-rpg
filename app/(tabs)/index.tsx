@@ -2,7 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Modal, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Edit2, X, Search, Package, Medal, TowerControl, Zap, Sparkles, BookLock, ShoppingCart } from 'lucide-react-native';
+import { Edit2, X, Search, Package, Medal, TowerControl, Zap, Sparkles, BookLock, ShoppingCart, Settings } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 export default function StatusScreen() {
@@ -21,6 +21,7 @@ export default function StatusScreen() {
     { name: 'Skills', icon: Sparkles, route: '/all-skills', color: '#FF1493' },
     { name: 'Vault', icon: BookLock, route: '/vault-codex', color: '#DC143C' },
     { name: 'Store', icon: ShoppingCart, route: '/store', color: '#FFD700' },
+    { name: 'Settings', icon: Settings, route: '/settings', color: '#8E8E93' },
   ];
 
   if (isLoading) {
