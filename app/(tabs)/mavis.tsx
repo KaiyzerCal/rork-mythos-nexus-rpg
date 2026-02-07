@@ -1,5 +1,5 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { Cpu, Send, Sparkles, Brain, MessageSquare, Heart, Target, Flame, X, Crown, Zap, Users, Activity, ArrowDown } from 'lucide-react-native';
+import { Cpu, Send, Sparkles, Brain, MessageSquare, Heart, Target, Flame, X, Crown, Zap, Users, Activity, ArrowDown, StopCircle } from 'lucide-react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useMavisMemory } from '@/contexts/MavisMemoryContext';
@@ -235,7 +235,8 @@ RELATIONSHIPS MODULE:
     return `${systemPrompt}\n\n=== FULL SYSTEM STATE ===\n${systemContext}${boardContext}${enryuContext}`;
   };
 
-  const { messages, sendMessage, setMessages, error } = useRorkAgent({ tools: {} });
+  const { messages, sendMessage, setMessages, error, status, stop } = useRorkAgent({ tools: {} });
+  const isStreaming = status === 'streaming';
 
   useEffect(() => {
     if (error) {
@@ -936,13 +937,23 @@ RELATIONSHIPS MODULE:
             multiline
             maxLength={1000}
           />
-          <TouchableOpacity
-            style={[styles.sendButton, enryuMode && { backgroundColor: 'rgba(220, 20, 60, 0.3)' }, !input.trim() && styles.sendButtonDisabled]}
-            onPress={handleSend}
-            disabled={!input.trim()}
-          >
-            <Send size={20} color={input.trim() ? (enryuMode ? '#DC143C' : '#9400D3') : '#666'} />
-          </TouchableOpacity>
+          {isStreaming ? (
+            <TouchableOpacity
+              style={[styles.stopButton, enryuMode && { backgroundColor: 'rgba(220, 20, 60, 0.4)', borderColor: '#DC143C' }]}
+              onPress={() => stop()}
+              activeOpacity={0.7}
+            >
+              <StopCircle size={20} color={enryuMode ? '#DC143C' : '#FF6B35'} />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.sendButton, enryuMode && { backgroundColor: 'rgba(220, 20, 60, 0.3)' }, !input.trim() && styles.sendButtonDisabled]}
+              onPress={handleSend}
+              disabled={!input.trim()}
+            >
+              <Send size={20} color={input.trim() ? (enryuMode ? '#DC143C' : '#9400D3') : '#666'} />
+            </TouchableOpacity>
+          )}
         </LinearGradient>
       </View>
     </KeyboardAvoidingView>
@@ -1130,6 +1141,16 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  stopButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: 'rgba(255, 107, 53, 0.3)',
+    borderRadius: 10,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderWidth: 1,
+    borderColor: '#FF6B35',
   },
   dismissButton: {
     width: 36,

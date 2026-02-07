@@ -1,7 +1,7 @@
 import { useGame } from '@/contexts/GameContext';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Modal, Alert, Keyboard } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
-import { Users, Crown, Lightbulb, Eye, MessageCircle, Send, ChevronLeft, Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react-native';
+import { Users, Crown, Lightbulb, Eye, MessageCircle, Send, ChevronLeft, Plus, Edit2, Trash2, X, RefreshCw, StopCircle } from 'lucide-react-native';
 import { useRorkAgent, generateObject } from '@rork-ai/toolkit-sdk';
 import { z } from 'zod';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -215,7 +215,7 @@ Does this conversation meaningfully contribute to character growth?`,
     }
   };
 
-  const { messages, sendMessage, setMessages, status } = useRorkAgent({ tools: {} });
+  const { messages, sendMessage, setMessages, status, stop } = useRorkAgent({ tools: {} });
   const isLoading = status === 'streaming';
 
   useEffect(() => {
@@ -478,13 +478,23 @@ Does this conversation meaningfully contribute to character growth?`,
             multiline
             maxLength={500}
           />
-          <TouchableOpacity
-            style={[styles.conversationSendButton, !input.trim() && styles.sendButtonDisabled]}
-            onPress={handleSend}
-            disabled={!input.trim()}
-          >
-            <Send size={20} color={input.trim() ? '#08C284' : '#666'} />
-          </TouchableOpacity>
+          {isLoading ? (
+            <TouchableOpacity
+              style={styles.stopButton}
+              onPress={() => stop()}
+              activeOpacity={0.7}
+            >
+              <StopCircle size={20} color="#FF6B35" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.conversationSendButton, !input.trim() && styles.sendButtonDisabled]}
+              onPress={handleSend}
+              disabled={!input.trim()}
+            >
+              <Send size={20} color={input.trim() ? '#08C284' : '#666'} />
+            </TouchableOpacity>
+          )}
         </View>
       </KeyboardAvoidingView>
     );
@@ -953,6 +963,16 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     backgroundColor: '#111',
     borderColor: '#333',
+  },
+  stopButton: {
+    width: 44,
+    height: 44,
+    backgroundColor: 'rgba(255, 107, 53, 0.2)',
+    borderRadius: 12,
+    alignItems: 'center' as const,
+    justifyContent: 'center' as const,
+    borderWidth: 1,
+    borderColor: '#FF6B35',
   },
   addButton: {
     flexDirection: 'row',
