@@ -214,21 +214,27 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       timestamp: Date.now(),
       lastUpdated: Date.now(),
     };
-    const updated = [newEntry, ...state.memoryEntries];
-    setState(prev => ({ ...prev, memoryEntries: updated }));
+    let updated: PrimeMemoryEntry[] = [];
+    setState(prev => {
+      updated = [newEntry, ...prev.memoryEntries];
+      return { ...prev, memoryEntries: updated };
+    });
     await saveMemoryEntries(updated);
     console.log('[PRIME-MEMORY] Added memory entry:', newEntry.memoryType, '-', newEntry.memoryKey);
     return newEntry;
-  }, [state.memoryEntries]);
+  }, []);
 
   const updateMemoryEntry = useCallback(async (id: string, updates: Partial<PrimeMemoryEntry>) => {
-    const updated = state.memoryEntries.map(e =>
-      e.id === id ? { ...e, ...updates, lastUpdated: Date.now() } : e
-    );
-    setState(prev => ({ ...prev, memoryEntries: updated }));
+    let updated: PrimeMemoryEntry[] = [];
+    setState(prev => {
+      updated = prev.memoryEntries.map(e =>
+        e.id === id ? { ...e, ...updates, lastUpdated: Date.now() } : e
+      );
+      return { ...prev, memoryEntries: updated };
+    });
     await saveMemoryEntries(updated);
     console.log('[PRIME-MEMORY] Updated memory entry:', id);
-  }, [state.memoryEntries]);
+  }, []);
 
   const addChatMessage = useCallback(async (message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
     const newMessage: ChatMessage = {
@@ -236,66 +242,69 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       id: `chat-prime-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
-    const updated = [newMessage, ...state.chatHistory];
-    setState(prev => ({ ...prev, chatHistory: updated }));
+    let updated: ChatMessage[] = [];
+    setState(prev => {
+      updated = [newMessage, ...prev.chatHistory];
+      return { ...prev, chatHistory: updated };
+    });
     await saveChatHistory(updated);
     console.log('[PRIME-MEMORY] Added chat message');
     return newMessage;
-  }, [state.chatHistory]);
+  }, []);
 
   const updateArc = useCallback(async (arcName: string, updates: Partial<ArcIndex>) => {
-    const existing = state.arcIndex.find(a => a.arcName === arcName);
-    let updated: ArcIndex[];
-    
-    if (existing) {
-      updated = state.arcIndex.map(a =>
-        a.arcName === arcName ? { ...a, ...updates, lastEvent: Date.now() } : a
-      );
-    } else {
-      const newArc: ArcIndex = {
-        id: `arc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        arcName,
-        status: 'active',
-        lastEvent: Date.now(),
-        notes: '',
-        ...updates,
-      };
-      updated = [newArc, ...state.arcIndex];
-    }
-    
-    setState(prev => ({ ...prev, arcIndex: updated }));
+    let updated: ArcIndex[] = [];
+    setState(prev => {
+      const existing = prev.arcIndex.find(a => a.arcName === arcName);
+      if (existing) {
+        updated = prev.arcIndex.map(a =>
+          a.arcName === arcName ? { ...a, ...updates, lastEvent: Date.now() } : a
+        );
+      } else {
+        const newArc: ArcIndex = {
+          id: `arc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          arcName,
+          status: 'active',
+          lastEvent: Date.now(),
+          notes: '',
+          ...updates,
+        };
+        updated = [newArc, ...prev.arcIndex];
+      }
+      return { ...prev, arcIndex: updated };
+    });
     await saveArcIndex(updated);
     console.log('[PRIME-MEMORY] Updated arc:', arcName);
-  }, [state.arcIndex]);
+  }, []);
 
   const updateCouncilProfile = useCallback(async (councilId: string, updates: Partial<CouncilProfile>) => {
-    const existing = state.councilProfiles.find(p => p.councilId === councilId);
-    let updated: CouncilProfile[];
-    
-    if (existing) {
-      updated = state.councilProfiles.map(p =>
-        p.councilId === councilId ? { ...p, ...updates, lastUpdated: Date.now(), growthLevel: (updates.growthLevel ?? p.growthLevel) + 0.1 } : p
-      );
-    } else {
-      const newProfile: CouncilProfile = {
-        id: `profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        councilId,
-        name: '',
-        class: 'core',
-        episodicMemory: [],
-        semanticMemory: {},
-        growthLevel: 1.0,
-        lastUpdated: Date.now(),
-        domainAuthority: [],
-        ...updates,
-      };
-      updated = [newProfile, ...state.councilProfiles];
-    }
-    
-    setState(prev => ({ ...prev, councilProfiles: updated }));
+    let updated: CouncilProfile[] = [];
+    setState(prev => {
+      const existing = prev.councilProfiles.find(p => p.councilId === councilId);
+      if (existing) {
+        updated = prev.councilProfiles.map(p =>
+          p.councilId === councilId ? { ...p, ...updates, lastUpdated: Date.now(), growthLevel: (updates.growthLevel ?? p.growthLevel) + 0.1 } : p
+        );
+      } else {
+        const newProfile: CouncilProfile = {
+          id: `profile-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          councilId,
+          name: '',
+          class: 'core',
+          episodicMemory: [],
+          semanticMemory: {},
+          growthLevel: 1.0,
+          lastUpdated: Date.now(),
+          domainAuthority: [],
+          ...updates,
+        };
+        updated = [newProfile, ...prev.councilProfiles];
+      }
+      return { ...prev, councilProfiles: updated };
+    });
     await saveCouncilProfiles(updated);
     console.log('[PRIME-MEMORY] Updated council profile:', councilId);
-  }, [state.councilProfiles]);
+  }, []);
 
   const createSystemSnapshot = useCallback(async (snapshot: Omit<SystemSnapshot, 'id' | 'timestamp'>) => {
     const newSnapshot: SystemSnapshot = {
@@ -303,12 +312,15 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       id: `snapshot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
-    const updated = [newSnapshot, ...state.systemSnapshots];
-    setState(prev => ({ ...prev, systemSnapshots: updated }));
+    let updated: SystemSnapshot[] = [];
+    setState(prev => {
+      updated = [newSnapshot, ...prev.systemSnapshots];
+      return { ...prev, systemSnapshots: updated };
+    });
     await saveSystemSnapshots(updated);
     console.log('[PRIME-MEMORY] Created system snapshot');
     return newSnapshot;
-  }, [state.systemSnapshots]);
+  }, []);
 
   const getMemoryContext = useCallback((domains?: string[], maxItems: number = 30): string => {
     let relevant = state.memoryEntries;
@@ -365,31 +377,40 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     
     await createSystemSnapshot(gameStateSnapshot);
     
+    let currentState: MavisPrimeMemoryState | null = null;
+    setState(prev => {
+      currentState = prev;
+      return prev;
+    });
+
+    if (!currentState) return { success: false, timestamp: Date.now(), memorySynced: 0, chatSynced: 0, arcsSynced: 0, councilsSynced: 0, snapshotsSynced: 0 };
+    
+    const snap = currentState as MavisPrimeMemoryState;
     await Promise.all([
-      saveMemoryEntries(state.memoryEntries),
-      saveChatHistory(state.chatHistory),
-      saveArcIndex(state.arcIndex),
-      saveCouncilProfiles(state.councilProfiles),
-      saveSystemSnapshots(state.systemSnapshots),
+      saveMemoryEntries(snap.memoryEntries),
+      saveChatHistory(snap.chatHistory),
+      saveArcIndex(snap.arcIndex),
+      saveCouncilProfiles(snap.councilProfiles),
+      saveSystemSnapshots(snap.systemSnapshots),
     ]);
     
     console.log('[OMNI-SYNC] Complete. All systems synchronized:');
-    console.log(`  - ${state.memoryEntries.length} memory entries`);
-    console.log(`  - ${state.chatHistory.length} chat messages`);
-    console.log(`  - ${state.arcIndex.length} arcs`);
-    console.log(`  - ${state.councilProfiles.length} council profiles`);
-    console.log(`  - ${state.systemSnapshots.length} snapshots`);
+    console.log(`  - ${snap.memoryEntries.length} memory entries`);
+    console.log(`  - ${snap.chatHistory.length} chat messages`);
+    console.log(`  - ${snap.arcIndex.length} arcs`);
+    console.log(`  - ${snap.councilProfiles.length} council profiles`);
+    console.log(`  - ${snap.systemSnapshots.length} snapshots`);
     
     return {
       success: true,
       timestamp: Date.now(),
-      memorySynced: state.memoryEntries.length,
-      chatSynced: state.chatHistory.length,
-      arcsSynced: state.arcIndex.length,
-      councilsSynced: state.councilProfiles.length,
-      snapshotsSynced: state.systemSnapshots.length,
+      memorySynced: snap.memoryEntries.length,
+      chatSynced: snap.chatHistory.length,
+      arcsSynced: snap.arcIndex.length,
+      councilsSynced: snap.councilProfiles.length,
+      snapshotsSynced: snap.systemSnapshots.length,
     };
-  }, [state, createSystemSnapshot]);
+  }, [createSystemSnapshot]);
 
   return {
     ...state,

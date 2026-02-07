@@ -132,26 +132,31 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
       updatedAt: Date.now(),
     };
 
-    const updatedItems = [newItem, ...state.memoryItems];
-    setState(prev => ({ ...prev, memoryItems: updatedItems }));
+    let updatedItems: MemoryItem[] = [];
+    setState(prev => {
+      updatedItems = [newItem, ...prev.memoryItems];
+      return { ...prev, memoryItems: updatedItems };
+    });
     await saveMemory(updatedItems);
     
     console.log('[MAVIS-MEMORY] Added new memory item:', newItem.type, '-', newItem.content.substring(0, 50));
     return newItem;
-  }, [state.memoryItems]);
+  }, []);
 
   const updateMemoryItem = useCallback(async (id: string, updates: Partial<MemoryItem>) => {
-    const updatedItems = state.memoryItems.map(item => 
-      item.id === id 
-        ? { ...item, ...updates, updatedAt: Date.now() }
-        : item
-    );
-    
-    setState(prev => ({ ...prev, memoryItems: updatedItems }));
+    let updatedItems: MemoryItem[] = [];
+    setState(prev => {
+      updatedItems = prev.memoryItems.map(item => 
+        item.id === id 
+          ? { ...item, ...updates, updatedAt: Date.now() }
+          : item
+      );
+      return { ...prev, memoryItems: updatedItems };
+    });
     await saveMemory(updatedItems);
     
     console.log('[MAVIS-MEMORY] Updated memory item:', id);
-  }, [state.memoryItems]);
+  }, []);
   
   const createConversationThread = useCallback(async (firstMessage: string, topics: string[], arcs: string[]) => {
     const thread: ConversationThread = {
@@ -166,37 +171,46 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
       arcs,
     };
     
-    const updatedThreads = [thread, ...state.conversationThreads];
-    setState(prev => ({ ...prev, conversationThreads: updatedThreads }));
+    let updatedThreads: ConversationThread[] = [];
+    setState(prev => {
+      updatedThreads = [thread, ...prev.conversationThreads];
+      return { ...prev, conversationThreads: updatedThreads };
+    });
     await saveConversationThreads(updatedThreads);
     
     console.log('[MAVIS-MEMORY] Created conversation thread:', thread.id);
     return thread;
-  }, [state.conversationThreads]);
+  }, []);
   
   const updateConversationThread = useCallback(async (threadId: string, updates: Partial<ConversationThread>) => {
-    const updatedThreads = state.conversationThreads.map(thread =>
-      thread.id === threadId
-        ? { ...thread, ...updates, lastMessageAt: Date.now() }
-        : thread
-    );
-    
-    setState(prev => ({ ...prev, conversationThreads: updatedThreads }));
+    let updatedThreads: ConversationThread[] = [];
+    setState(prev => {
+      updatedThreads = prev.conversationThreads.map(thread =>
+        thread.id === threadId
+          ? { ...thread, ...updates, lastMessageAt: Date.now() }
+          : thread
+      );
+      return { ...prev, conversationThreads: updatedThreads };
+    });
     await saveConversationThreads(updatedThreads);
     
     console.log('[MAVIS-MEMORY] Updated conversation thread:', threadId);
-  }, [state.conversationThreads]);
+  }, []);
 
   const deleteMemoryItem = useCallback(async (id: string) => {
-    const updatedItems = state.memoryItems.filter(item => item.id !== id);
-    setState(prev => ({ ...prev, memoryItems: updatedItems }));
+    let updatedItems: MemoryItem[] = [];
+    setState(prev => {
+      updatedItems = prev.memoryItems.filter(item => item.id !== id);
+      return { ...prev, memoryItems: updatedItems };
+    });
     await saveMemory(updatedItems);
     
     console.log('[MAVIS-MEMORY] Deleted memory item:', id);
-  }, [state.memoryItems]);
+  }, []);
 
   const getMemoryContext = useCallback((domains?: string[], maxItems: number = 20): string => {
     let relevantItems = state.memoryItems;
+    // Note: this reads state directly which is fine for a read-only getter
 
     if (domains && domains.length > 0) {
       relevantItems = relevantItems.filter(item => 
