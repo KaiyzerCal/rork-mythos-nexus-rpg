@@ -1,6 +1,7 @@
+import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Cpu, Send, Sparkles, Brain, MessageSquare, Heart, Target, Flame, X, Crown, Zap, Users, Activity, ArrowDown, StopCircle } from 'lucide-react-native';
-import React, { useState, useRef, useEffect } from 'react';
+import { Cpu, Send, Sparkles, Brain, MessageSquare, Heart, Target, Flame, X, Crown, Zap, Users, Activity, ArrowDown, StopCircle, Copy, Check } from 'lucide-react-native';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useMavisMemory } from '@/contexts/MavisMemoryContext';
 import { useMavisPrimeMemory } from '@/contexts/MavisPrimePersistentMemory';
@@ -25,6 +26,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Keyboard,
+  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -72,6 +74,7 @@ export default function MavisScreen() {
   const [chatInitialized, setChatInitialized] = useState(false);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [isNearBottom, setIsNearBottom] = useState(true);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const buildFullSystemContext = () => {
@@ -531,19 +534,45 @@ RELATIONSHIPS MODULE:
     }]);
   };
 
+  const copyMessageText = useCallback(async (messageId: string, text: string) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      setCopiedMessageId(messageId);
+      console.log('[MAVIS] Copied message to clipboard');
+      setTimeout(() => setCopiedMessageId(null), 2000);
+    } catch (err) {
+      console.error('[MAVIS] Failed to copy:', err);
+    }
+  }, []);
+
   const clearHistory = async () => {
-    await AsyncStorage.removeItem(MAVIS_CHAT_HISTORY_KEY);
-    const memoryCount = getMemoryContext().includes('fresh session') ? 0 : getMemoryContext().split('\n\n').length - 1;
-    setMessages([{
-      id: `msg-clear-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      role: 'assistant',
-      parts: [{
-        type: 'text',
-        text: enryuMode 
-          ? `Chat history cleared. ENRYU MODE remains active. I still remember ${memoryCount} long-term memory items. Ready for your command.`
-          : `Chat history cleared. I still maintain ${memoryCount} long-term memory items from our sessions. How may I assist you today?`,
-      }],
-    }]);
+    Alert.alert(
+      'Clear Chat Thread',
+      'This will only clear the chat messages. All memory, data, council profiles, and system state will be preserved.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear Chat',
+          style: 'destructive',
+          onPress: async () => {
+            await AsyncStorage.removeItem(MAVIS_CHAT_HISTORY_KEY);
+            const memoryCount = primeMemory.memoryEntries.length;
+            const councilCount = primeMemory.councilProfiles.length;
+            setMessages([{
+              id: `msg-clear-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              role: 'assistant',
+              parts: [{
+                type: 'text',
+                text: enryuMode 
+                  ? `⚡ Chat thread cleared. ENRYU MODE remains active.\n\n✓ ${memoryCount} Prime Memory entries preserved\n✓ ${councilCount} Council profiles intact\n✓ All system data & arcs retained\n\nReady for your command.`
+                  : `🌟 Chat thread cleared.\n\n✓ ${memoryCount} Prime Memory entries preserved\n✓ ${councilCount} Council profiles intact\n✓ All system data, arcs & vault entries retained\n✓ Long-term memory fully intact\n\nHow may I assist you today?`,
+              }],
+            }]);
+            console.log('[MAVIS] Chat thread cleared. Memory and data preserved.');
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -620,12 +649,22 @@ RELATIONSHIPS MODULE:
             const baseKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}-${msg.role}`;
             const uniqueKey = `${baseKey}-${idx}`;
             return (
-            <View
+            <TouchableOpacity
               key={uniqueKey}
               style={[
                 styles.messageCard,
                 msg.role === 'user' ? styles.userMessage : styles.mavisMessage,
               ]}
+              activeOpacity={0.8}
+              onLongPress={() => {
+                const fullText = msg.parts
+                  .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && !!(p as any).text)
+                  .map(p => p.text)
+                  .join('\n');
+                if (fullText.trim()) {
+                  copyMessageText(msg.id, fullText);
+                }
+              }}
             >
               <LinearGradient
                 colors={
@@ -641,6 +680,28 @@ RELATIONSHIPS MODULE:
                   <Text style={[styles.messageRole, enryuMode && msg.role === 'assistant' && { color: '#DC143C' }]}>
                     {msg.role === 'user' ? 'YOU' : enryuMode ? 'ENRYU' : 'MAVIS'}
                   </Text>
+                  {copiedMessageId === msg.id ? (
+                    <View style={styles.copiedBadge}>
+                      <Check size={12} color="#4CAF50" />
+                      <Text style={styles.copiedText}>Copied</Text>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={styles.copyButton}
+                      onPress={() => {
+                        const fullText = msg.parts
+                          .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && !!(p as any).text)
+                          .map(p => p.text)
+                          .join('\n');
+                        if (fullText.trim()) {
+                          copyMessageText(msg.id, fullText);
+                        }
+                      }}
+                      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                    >
+                      <Copy size={12} color="#666" />
+                    </TouchableOpacity>
+                  )}
                 </View>
                 {msg.parts
                   .map((part, partIdx) => {
@@ -673,7 +734,7 @@ RELATIONSHIPS MODULE:
                   })
                   .filter(Boolean)}
               </LinearGradient>
-            </View>
+            </TouchableOpacity>
           );
           })}
       </ScrollView>
@@ -1055,6 +1116,26 @@ const styles = StyleSheet.create({
     fontWeight: '800' as const,
     color: '#9400D3',
     letterSpacing: 1,
+  },
+  copyButton: {
+    padding: 4,
+    borderRadius: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  copiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
+  },
+  copiedText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#4CAF50',
+    letterSpacing: 0.5,
   },
   messageContent: {
     fontSize: 14,
