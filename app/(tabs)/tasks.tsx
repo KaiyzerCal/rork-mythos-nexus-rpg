@@ -38,7 +38,7 @@ export default function TasksScreen() {
 
   const allSkills = useMemo(() => {
     const skills = gameState.skillTrees.map(s => ({ id: s.id, name: s.name, isParent: true }));
-    const subSkills: { id: string; name: string; isParent: false; parentId: string }[] = [];
+    const subSkills: Array<{ id: string; name: string; isParent: false; parentId: string }> = [];
     
     Object.entries(gameState.skillSubTrees || {}).forEach(([parentId, subTree]) => {
       subTree.forEach(sub => {
@@ -121,8 +121,7 @@ export default function TasksScreen() {
     setModalVisible(true);
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _handleToggleArchive = (task: Task) => {
+  const handleToggleArchive = (task: Task) => {
     updateTask(task.id, {
       status: task.status === 'archived' ? 'active' : 'archived',
     });
@@ -925,5 +924,3 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
-
-

@@ -1,12 +1,7 @@
-import { Home, Flame, Target, Users, Cpu } from "lucide-react-native";
-import React from "react";
-
-import { initThreadStore } from "../../lib/persistence/threadStore";
 import { Tabs } from "expo-router";
-import { installRorkUnifiedPersistence } from "../../lib/rork-unified-persistence";
-installRorkUnifiedPersistence();
+import { Home, Flame, Target, Users, Package, TowerControl, Zap, Search, Medal, Sparkles, BookLock, Cpu, CheckSquare } from "lucide-react-native";
+import React from "react";
 
-initThreadStore();
 export default function TabLayout() {
   return (
     <Tabs
@@ -19,41 +14,49 @@ export default function TabLayout() {
           borderTopColor: "#08C284",
           borderTopWidth: 1,
           paddingBottom: 4,
-          height: 60},
+          height: 60,
+        },
         tabBarLabelStyle: {
           fontSize: 10,
-          fontWeight: "600"}}}
+          fontWeight: "600",
+        },
+      }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Dashboard",
-          tabBarIcon: ({ color }) => <Home size={22} color={color} />}}
+          tabBarIcon: ({ color }) => <Home size={22} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="transformations"
         options={{
           title: "Forms",
-          tabBarIcon: ({ color }) => <Flame size={22} color={color} />}}
+          tabBarIcon: ({ color }) => <Flame size={22} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="quests"
         options={{
           title: "Quests",
-          tabBarIcon: ({ color }) => <Target size={22} color={color} />}}
+          tabBarIcon: ({ color }) => <Target size={22} color={color} />,
+        }}
       />
       <Tabs.Screen name="tasks" options={{ href: null }} />
       <Tabs.Screen
         name="councils"
         options={{
           title: "Councils",
-          tabBarIcon: ({ color }) => <Users size={22} color={color} />}}
+          tabBarIcon: ({ color }) => <Users size={22} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="mavis"
         options={{
           title: "MAVIS",
-          tabBarIcon: ({ color }) => <Cpu size={22} color={color} />}}
+          tabBarIcon: ({ color }) => <Cpu size={22} color={color} />,
+        }}
       />
       <Tabs.Screen name="inventory" options={{ href: null }} />
       <Tabs.Screen name="scouter" options={{ href: null }} />
@@ -75,5 +78,3 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
-

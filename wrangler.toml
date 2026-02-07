@@ -1,3 +1,0 @@
-name = "mythos-nexus-api"
-main = "backend/worker.ts"
-compatibility_date = "2025-01-01"

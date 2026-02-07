@@ -1,2 +1,0 @@
-
-sdk.dir=C:\\Users\\calth\\AppData\\Local\\Android\\Sdk

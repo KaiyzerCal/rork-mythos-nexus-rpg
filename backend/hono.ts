@@ -9,14 +9,16 @@ const app = new Hono();
 app.use("*", cors());
 
 app.use(
-  "/api/trpc/*",
+  "/trpc/*",
   trpcServer({
+    endpoint: "/api/trpc",
     router: appRouter,
     createContext,
   })
 );
 
-app.get("/", (c) => c.json({ ok: true, service: "mythos-nexus-api" }));
+app.get("/", (c) => {
+  return c.json({ status: "ok", message: "API is running" });
+});
 
 export default app;
-

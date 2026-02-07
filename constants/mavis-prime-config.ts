@@ -849,4 +849,3 @@ export const detectCommand = (message: string): string | null => {
 
   return null;
 };
-

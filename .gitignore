@@ -41,18 +41,4 @@ android/
 .rork
 .env
 rork-eslint.config.js
-*.bak.*
-node_modules/
-android/app/build/
-android/app/.cxx/
-*.apk
-# --- local junk / generated ---
-node_modules/
-android/app/build/
-android/app/.cxx/
-*.apk
-*.bak.*
-
-
-_backup_mojibake_*/
-mojibake-report.csv
+core

@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { GameProvider } from "@/contexts/GameContext";
 import { MavisMemoryProvider } from "@/contexts/MavisMemoryContext";
 import { MavisPrimeMemoryProvider } from "@/contexts/MavisPrimePersistentMemory";
-import { trpc, trpcClient } from "@/lib/trpc.client";
+import { trpc, trpcClient } from "@/lib/trpc";
 
 SplashScreen.preventAutoHideAsync();
 

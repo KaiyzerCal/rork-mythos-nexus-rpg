@@ -1,6 +1,6 @@
 import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Star, Zap, Crown, Shield, Flame } from "lucide-react-native";
+import { User, Star, Zap, Crown, Shield, Flame } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

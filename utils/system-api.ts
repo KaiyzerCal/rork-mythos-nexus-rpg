@@ -1,4 +1,4 @@
-import { trpcClient } from "@/lib/trpc.client";
+import { trpcClient } from '@/lib/trpc';
 
 export const SystemAPI = {
   async getQuests(status?: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'ARCHIVED') {

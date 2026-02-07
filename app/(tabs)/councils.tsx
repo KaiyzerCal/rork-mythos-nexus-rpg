@@ -33,7 +33,7 @@ export default function CouncilsScreen() {
   const getMemberContext = (member: typeof councilMembers[0]) => {
     const { 
       stats, identity, currentForm, currentBPM, energySystems, transformations, 
-      quests, vaultEntries, realWorldModules, councils, skillTrees, 
+      quests, vaultEntries, realWorldModules, councils, skillTrees, skillSubTrees,
       dailyRituals, inventoryV2, roster, allies, currencies, currentFloor, gpr, pvpRating, arcStory,
       tasks, skillProficiency
     } = gameState;
@@ -43,8 +43,7 @@ export default function CouncilsScreen() {
     const todayRituals = dailyRituals.filter(r => !r.completed);
     const completedRituals = dailyRituals.filter(r => r.completed);
     const unlockedSkills = skillTrees.filter(s => s.unlocked);
-    const _mainCouncils = councils;
-void _mainCouncils;
+    const mainCouncils = councils;
     const topAllies = allies;
     const allVault = vaultEntries;
     const equippedItems = inventoryV2.filter(i => i.slot !== 'Storage');
@@ -163,7 +162,8 @@ CRITICAL: Keep ALL responses concise and condensed to EXACTLY 4 PARAGRAPHS MAXIM
     
     return systemContext;
   };
-  const [, setAnalyzingGrowth] = useState(false);
+
+  const [analyzingGrowth, setAnalyzingGrowth] = useState(false);
 
   const analyzeConversationGrowth = async (conversationHistory: string, memberName: string) => {
     try {
@@ -1082,6 +1082,3 @@ const styles = StyleSheet.create({
     borderColor: '#333',
   },
 });
-
-
-
