@@ -53,35 +53,35 @@ void _mainCouncils;
     
     const systemContext = `=== COMPREHENSIVE SYSTEM CONTEXT ===
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¹ IDENTITY:
+📋 IDENTITY:
 - Name: ${identity.inscribedName}
-- Titles: ${identity.titles.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
+- Titles: ${identity.titles.join(' • ')}
 - Species: ${identity.speciesLineage[identity.speciesLineage.length - 1]}
 - Territory: ${identity.territory.class}
 - Tower Floors: ${identity.territory.towerFloorsInfluence}
 - Arc Story: ${arcStory || 'Unknown'}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ CURRENT STATUS:
+⚡ CURRENT STATUS:
 - Level ${stats.level} | Rank ${stats.rank} | XP: ${stats.xp}/${stats.xpToNextLevel}
 - Current Form: ${currentForm} (${currentBPM} BPM - energetic vibration, NOT heart rate)
 - Fatigue: ${stats.fatigue}/100 | Full Cowl Sync: ${stats.fullCowlSync}% | Codex Integrity: ${stats.codexIntegrity}%
-- Stats: STR ${stats.STR} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ AGI ${stats.AGI} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ VIT ${stats.VIT} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ INT ${stats.INT} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ WIS ${stats.WIS} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ CHA ${stats.CHA} ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ LCK ${stats.LCK}
+- Stats: STR ${stats.STR} • AGI ${stats.AGI} • VIT ${stats.VIT} • INT ${stats.INT} • WIS ${stats.WIS} • CHA ${stats.CHA} • LCK ${stats.LCK}
 - Tower Floor: ${currentFloor} | GPR: ${gpr} | PVP Rating: ${pvpRating}
 - Aura Power: ${stats.auraPower}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â° CURRENCIES:
+💰 CURRENCIES:
 ${currencies.map(c => `- ${c.icon} ${c.name}: ${c.amount}`).join('\n')}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ ENERGY SYSTEMS (${energySystems.length} total):
+🌀 ENERGY SYSTEMS (${energySystems.length} total):
 ${energySystems.map(e => `- ${e.type}: ${e.current}/${e.max} (${e.status}) - ${e.description}`).join('\n')}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ TRANSFORMATIONS (${transformations.length} forms unlocked):
+🔥 TRANSFORMATIONS (${transformations.length} forms unlocked):
 ${transformations.slice(0, 8).map(t => {
   return `- ${t.name} (${t.bpmRange} BPM) - ${t.category || 'Transformation'} - ${t.description || 'No description'}`;
 }).join('\n')}
 ${transformations.length > 8 ? `... and ${transformations.length - 8} more forms` : ''}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¡ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â SKILLS & ABILITIES (${unlockedSkills.length} unlocked):
+⚔️ SKILLS & ABILITIES (${unlockedSkills.length} unlocked):
 ${unlockedSkills.slice(0, 10).map(s => {
   const proficiencyKey = s.id;
   const proficiency = skillProficiency?.[proficiencyKey] || 0;
@@ -89,11 +89,11 @@ ${unlockedSkills.slice(0, 10).map(s => {
 }).join('\n')}
 ${unlockedSkills.length > 10 ? `... and ${unlockedSkills.length - 10} more skills` : ''}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â½ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¯ ACTIVE QUESTS (${activeQuests.length}):
+🎯 ACTIVE QUESTS (${activeQuests.length}):
 ${activeQuests.map(q => `- ${q.title}: ${q.progress ? `${q.progress.current}/${q.progress.target}` : 'ongoing'} (${q.xpReward} XP)${q.realWorldMapping ? ` - ${q.realWorldMapping}` : ''}`).join('\n')}
 ${completedQuests.length > 0 ? `\nCompleted: ${completedQuests.length} quests` : ''}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã¢â‚¬Â¦ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ TASKS & HABITS (${allTasks.length} total):
+✅ TASKS & HABITS (${allTasks.length} total):
 ${allTasks.slice(0, 8).map(t => {
   const linkedSkill = t.linkedSkillId ? skillTrees.find(s => s.id === t.linkedSkillId) : null;
   const skillInfo = linkedSkill ? ` [Linked: ${linkedSkill.name}${t.skillXpReward ? ` +${t.skillXpReward} Prof` : ''}]` : '';
@@ -101,49 +101,49 @@ ${allTasks.slice(0, 8).map(t => {
 }).join('\n')}
 ${allTasks.length > 8 ? `... and ${allTasks.length - 8} more tasks` : ''}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¦ TODAY'S RITUALS (${todayRituals.length} pending):
+📅 TODAY'S RITUALS (${todayRituals.length} pending):
 ${todayRituals.map(r => `- ${r.name} (${r.type}): +${r.xpReward} XP - ${r.description}`).join('\n')}
 ${completedRituals.length > 0 ? `\nCompleted Today: ${completedRituals.length} rituals` : ''}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¹Ã…â€œÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¥ COUNCILS & ALLIES:
+👥 COUNCILS & ALLIES:
 Council Members (${councilMembers.length} total):
 ${councilMembers.map(c => `- ${c.name} (${c.class}): ${c.role} - ${c.specialty || 'General'} - ${c.notes}`).join('\n')}
 
 Allies (${allies.length} total):
 ${topAllies.map(a => `- ${a.name} (${a.relationship}) Lv.${a.level} - ${a.specialty} [Affinity: ${a.affinity}%]`).join('\n')}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â½ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ EQUIPPED ITEMS (${equippedItems.length}):
+🎒 EQUIPPED ITEMS (${equippedItems.length}):
 ${equippedItems.map(i => `- [${i.slot}] ${i.name} (${i.tier}) - ${i.description}`).join('\n')}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â  COMPLETE RANKINGS/ROSTER (${allRoster.length} tracked):
+📊 COMPLETE RANKINGS/ROSTER (${allRoster.length} tracked):
 ${allRoster.map((r, idx) => `#${idx + 1} ${r.display} (${r.role}) ${r.rank} Lv.${r.level} | GPR: ${r.gpr} | PvP: ${(r.pvp/1000).toFixed(1)} | ${r.jjkGrade} ${r.opTier} | ${r.influence}${r.notes ? ` - ${r.notes}` : ''}`).join('\n')}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ COMPLETE VAULT CODEX (${allVault.length} entries):
+🔒 COMPLETE VAULT CODEX (${allVault.length} entries):
 ${allVault.map(v => {
   const date = new Date(v.timestamp).toLocaleDateString();
   return `- [${v.category.toUpperCase()}] ${v.title} (${v.importance.toUpperCase()}) - ${date}\n  Content: ${v.content}`;
 }).join('\n\n')}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚ÂÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â¹ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¯ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â REAL-WORLD MODULES:
+🏋️ REAL-WORLD MODULES:
 Fitness:
   - Weekly Target: ${realWorldModules.fitness.habitTargets.weekSessions} sessions
   - Recovery Days: ${realWorldModules.fitness.habitTargets.recoveryDays}
   - YMCA Credit: ${realWorldModules.fitness.ymcaBootcampCredit.perClassXP} XP/class (${realWorldModules.fitness.ymcaBootcampCredit.capWeek} weekly cap)
 
 Business:
-  - Nodes: ${realWorldModules.business.nodes.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
+  - Nodes: ${realWorldModules.business.nodes.join(' • ')}
   - Daily Rule: ${realWorldModules.business.dailyRule}
 
 Legal Case:
   - ${realWorldModules.legalCase.coreStory}
-  - Evidence: ${realWorldModules.legalCase.evidenceTypes.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
-  - Next Steps: ${realWorldModules.legalCase.nextSteps.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
+  - Evidence: ${realWorldModules.legalCase.evidenceTypes.join(' • ')}
+  - Next Steps: ${realWorldModules.legalCase.nextSteps.join(' • ')}
 
 Relationships:
   - Rizz Aura: ${realWorldModules.relationships.rizzAuraEnabled ? 'ACTIVE' : 'inactive'}
-  - Safety Rules: ${realWorldModules.relationships.safetyRules.join(' ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ ')}
+  - Safety Rules: ${realWorldModules.relationships.safetyRules.join(' • ')}
 
-ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â°ÃƒÆ’Ã¢â‚¬Â¦Ãƒâ€šÃ‚Â¸ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬ÃƒÂ¢Ã¢â‚¬Å¾Ã‚Â¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¡ KEY NOTES:
+💡 KEY NOTES:
 - BPM = ENERGETIC VIBRATION (not physical heart rate). Each transformation has a BPM range representing consciousness frequency.
 - Full Cowl = Black Heart Pulse Modulation - signature technique for precise BPM synchronization.
 - All tabs are interconnected: Character, Transformations, Energy, Quests, Tasks, Skills, Councils, Inventory, Rituals, Vault, Tower, Rankings, Progress, and Mavis chat.
@@ -1082,3 +1082,6 @@ const styles = StyleSheet.create({
     borderColor: '#333',
   },
 });
+
+
+

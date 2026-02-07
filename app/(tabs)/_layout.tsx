@@ -1,10 +1,12 @@
 import { Home, Flame, Target, Users, Cpu } from "lucide-react-native";
 import React from "react";
-
+
+import { initThreadStore } from "../../lib/persistence/threadStore";
 import { Tabs } from "expo-router";
 import { installRorkUnifiedPersistence } from "../../lib/rork-unified-persistence";
 installRorkUnifiedPersistence();
 
+initThreadStore();
 export default function TabLayout() {
   return (
     <Tabs
@@ -73,6 +75,5 @@ export default function TabLayout() {
     </Tabs>
   );
 }
-
 
 

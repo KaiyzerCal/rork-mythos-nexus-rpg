@@ -44,7 +44,7 @@ export default function TasksScreen() {
       subTree.forEach(sub => {
         subSkills.push({
           id: sub.id,
-          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${sub.name}`,
+          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} → ${sub.name}`,
           isParent: false,
           parentId,
         });
@@ -146,7 +146,7 @@ export default function TasksScreen() {
       const parentSkill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
       const subSkill = gameState.skillSubTrees?.[task.linkedSkillId]?.find(s => s.id === task.linkedSubSkillId);
       if (parentSkill && subSkill) {
-        return `${parentSkill.name} ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã‚Â ÃƒÂ¢Ã¢â€šÂ¬Ã¢â€žÂ¢ ${subSkill.name}`;
+        return `${parentSkill.name} → ${subSkill.name}`;
       }
     } else {
       const skill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
@@ -925,3 +925,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+
+

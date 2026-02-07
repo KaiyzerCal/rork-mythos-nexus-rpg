@@ -53,3 +53,6 @@ android/app/.cxx/
 *.apk
 *.bak.*
 
+
+_backup_mojibake_*/
+mojibake-report.csv

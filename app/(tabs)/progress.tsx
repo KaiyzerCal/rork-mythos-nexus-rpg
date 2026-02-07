@@ -221,7 +221,7 @@ function QuestCard({ quest, onComplete }: QuestCardProps) {
 
         {quest.realWorldMapping && (
           <View style={styles.mappingBadge}>
-            <Text style={styles.mappingText}>ÃƒÆ’Ã‚Â°Ãƒâ€¦Ã‚Â¸Ãƒâ€¦Ã¢â‚¬â„¢Ãƒâ€¦Ã‚Â½ {quest.realWorldMapping}</Text>
+            <Text style={styles.mappingText}>?? {quest.realWorldMapping}</Text>
           </View>
         )}
       </LinearGradient>
@@ -528,3 +528,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+
+
+
+
+
+

@@ -200,7 +200,7 @@ function SessionCard({ session }: SessionCardProps) {
           <Text style={styles.sessionBPM}>{session.bpm}</Text>
         </View>
         <Text style={styles.sessionTime}>
-          {dateStr} â€¢ {timeStr}
+          {dateStr} • {timeStr}
         </Text>
       </View>
       <Text style={styles.sessionForm}>{session.form}</Text>
@@ -423,3 +423,5 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+
+
