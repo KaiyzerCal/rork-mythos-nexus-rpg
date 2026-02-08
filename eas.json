@@ -3,8 +3,7 @@
     "vantara": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleVantaraRelease"
+        "buildType": "apk"
       },
       "env": {
         "EXPO_PUBLIC_APP_MODE": "VANTARA",
@@ -14,8 +13,7 @@
     "navi": {
       "distribution": "internal",
       "android": {
-        "buildType": "apk",
-        "gradleCommand": ":app:assembleNaviRelease"
+        "buildType": "apk"
       },
       "env": {
         "EXPO_PUBLIC_APP_MODE": "NAVI",
@@ -24,3 +22,4 @@
     }
   }
 }
+

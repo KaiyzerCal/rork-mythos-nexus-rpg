@@ -15,14 +15,18 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.mythos-nexus-rpg"
+      "bundleIdentifier": "app.rork.mythos-nexus-rpg",
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.mythos_nexus_rpg"
+      "package": "app.rork.mythos_nexus_rpg",
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -38,6 +42,11 @@
       "expo-web-browser",
       "expo-sqlite"
     ],
+    "updates": {
+      "enabled": true,
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/5efca233-e8dc-424b-8bc0-acf1b9c04737"
+    },
     "experiments": {
       "typedRoutes": true
     },
