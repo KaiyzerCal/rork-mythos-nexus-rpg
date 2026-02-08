@@ -565,12 +565,6 @@ return (<KeyboardAvoidingView
           .map((msg, idx) => {
             const baseKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}-${msg.role}`;
             const uniqueKey = `${baseKey}-${idx}`;
-// DUPLICATE REMOVED:             const handlePaste = async () => {
-  const text = await pasteFromClipboard();
-  if (!text) return;
-  // TODO: change setInput(...) to your actual input setter if different
-  setInput((prev: string) => (prev ? (prev + " " + text) : text));
-};
 
 // DUPLICATE REMOVED: const handleCopy = async (text: string) => {
   await copyToClipboard(text);
