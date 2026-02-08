@@ -2,13 +2,24 @@
 
 /**
  * Core SQLite schema for Mythos/Vantara.
- * NOTE: WAL improves concurrency and durability.
+ * Everything can be stored via json_store (compressed JSON).
+ * Specialized tables remain for queryable data.
  */
 export function initDb() {
   db.execSync(`
     PRAGMA journal_mode = WAL;
 
-    -- Generic KV for flags + lightweight settings
+    -- Universal compressed JSON store
+    CREATE TABLE IF NOT EXISTS json_store (
+      scope TEXT NOT NULL,
+      key TEXT NOT NULL,
+      value TEXT NOT NULL,
+      updated_at INTEGER NOT NULL,
+      PRIMARY KEY (scope, key)
+    );
+    CREATE INDEX IF NOT EXISTS idx_json_store_updated ON json_store(updated_at);
+
+    -- Generic KV
     CREATE TABLE IF NOT EXISTS kv (
       key TEXT PRIMARY KEY NOT NULL,
       value TEXT NOT NULL,
@@ -31,7 +42,7 @@ export function initDb() {
     CREATE INDEX IF NOT EXISTS idx_memory_kind ON memory_vault(kind);
     CREATE INDEX IF NOT EXISTS idx_memory_updated ON memory_vault(updated_at);
 
-    -- Prime chat log (structured, queryable)
+    -- Prime chat log
     CREATE TABLE IF NOT EXISTS prime_chat (
       id TEXT PRIMARY KEY NOT NULL,
       timestamp INTEGER NOT NULL,
@@ -55,7 +66,7 @@ export function initDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_prime_arcs_name ON prime_arcs(arcName);
 
-    -- Council profiles (stored as JSON strings)
+    -- Council profiles
     CREATE TABLE IF NOT EXISTS prime_council_profiles (
       id TEXT PRIMARY KEY NOT NULL,
       councilId TEXT NOT NULL,
@@ -69,7 +80,7 @@ export function initDb() {
     );
     CREATE INDEX IF NOT EXISTS idx_prime_council_class ON prime_council_profiles(class);
 
-    -- OmniSync snapshots (store payload as TEXT; can compress later)
+    -- OmniSync snapshots
     CREATE TABLE IF NOT EXISTS prime_snapshots (
       id TEXT PRIMARY KEY NOT NULL,
       timestamp INTEGER NOT NULL,
