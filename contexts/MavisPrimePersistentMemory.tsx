@@ -5,8 +5,6 @@ import createContextHook from '@nkzw/create-context-hook';
 import { insertMemory, getAllMemory } from "@/db/memory";
 
 import { insertMemory, getAllMemory } from "@/db/memory";
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 export function savePrimeMemoryToSqlite(args: {
   slot: number;
   kind: string;
@@ -21,7 +19,6 @@ export function savePrimeMemoryToSqlite(args: {
 export function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -37,12 +34,9 @@ export interface PrimeMemoryEntry {
   relatedQuests?: string[];
   tags?: string[];
 }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -56,12 +50,9 @@ export interface ChatMessage {
   sessionId: string;
   memoryFlag: boolean;
 }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -72,12 +63,9 @@ export interface ArcIndex {
   lastEvent: number;
   notes: string;
 }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -92,12 +80,9 @@ export interface CouncilProfile {
   lastUpdated: number;
   domainAuthority: string[];
 }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -114,12 +99,9 @@ export interface SystemSnapshot {
   councilMembers: number;
   identity: string;
 }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -131,77 +113,59 @@ interface MavisPrimeMemoryState {
   systemSnapshots: SystemSnapshot[];
   isLoaded: boolean;
 }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const PRIME_MEMORY_KEY = 'mavis_prime_memory_core_v7_5';
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const PRIME_CHAT_KEY = 'mavis_prime_chat_history_v7_5';
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const PRIME_ARCS_KEY = 'mavis_prime_arc_index_v7_5';
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const PRIME_COUNCIL_PROFILES_KEY = 'mavis_prime_council_profiles_v7_5';
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const PRIME_SNAPSHOTS_KEY = 'mavis_prime_system_snapshots_v7_5';
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const MAX_MEMORY_ENTRIES = 1000;
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const MAX_CHAT_HISTORY = 500;
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const MAX_ARC_INDEX = 50;
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const MAX_COUNCIL_PROFILES = 100;
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 const MAX_SNAPSHOTS = 100;
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
 export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook(() => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -217,19 +181,15 @@ function loadPrimeMemoryFromSqlite() {
   useEffect(() => {
     loadAllMemory();
   }, []);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const loadAllMemory = async () => {
     try {
       console.log('[PRIME-MEMORY] Loading all memory systems...');
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -246,32 +206,25 @@ function loadPrimeMemoryFromSqlite() {
         AsyncStorage.getItem(PRIME_COUNCIL_PROFILES_KEY),
         AsyncStorage.getItem(PRIME_SNAPSHOTS_KEY),
       ]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
       const memoryEntries: PrimeMemoryEntry[] = storedMemory ? JSON.parse(storedMemory) : [];
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
       const chatHistory: ChatMessage[] = storedChat ? JSON.parse(storedChat) : [];
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
       const arcIndex: ArcIndex[] = storedArcs ? JSON.parse(storedArcs) : [];
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
       const councilProfiles: CouncilProfile[] = storedCouncils ? JSON.parse(storedCouncils) : [];
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -304,18 +257,14 @@ function loadPrimeMemoryFromSqlite() {
       });
     }
   };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const saveMemoryEntries = async (entries: PrimeMemoryEntry[]) => {
     try {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -331,18 +280,14 @@ function loadPrimeMemoryFromSqlite() {
       console.error('[PRIME-MEMORY] Failed to save memory entries:', error);
     }
   };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const saveChatHistory = async (chat: ChatMessage[]) => {
     try {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -355,18 +300,14 @@ function loadPrimeMemoryFromSqlite() {
       console.error('[PRIME-MEMORY] Failed to save chat history:', error);
     }
   };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const saveArcIndex = async (arcs: ArcIndex[]) => {
     try {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -379,18 +320,14 @@ function loadPrimeMemoryFromSqlite() {
       console.error('[PRIME-MEMORY] Failed to save arc index:', error);
     }
   };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const saveCouncilProfiles = async (profiles: CouncilProfile[]) => {
     try {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -401,18 +338,14 @@ function loadPrimeMemoryFromSqlite() {
       console.error('[PRIME-MEMORY] Failed to save council profiles:', error);
     }
   };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const saveSystemSnapshots = async (snapshots: SystemSnapshot[]) => {
     try {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -425,17 +358,13 @@ function loadPrimeMemoryFromSqlite() {
       console.error('[PRIME-MEMORY] Failed to save system snapshots:', error);
     }
   };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const addMemoryEntry = useCallback(async (entry: Omit<PrimeMemoryEntry, 'id' | 'timestamp' | 'lastUpdated'>) => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -445,7 +374,6 @@ function loadPrimeMemoryFromSqlite() {
       timestamp: Date.now(),
       lastUpdated: Date.now(),
     };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -455,17 +383,13 @@ function loadPrimeMemoryFromSqlite() {
     console.log('[PRIME-MEMORY] Added memory entry:', newEntry.memoryType, '-', newEntry.memoryKey);
     return newEntry;
   }, [state.memoryEntries]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const updateMemoryEntry = useCallback(async (id: string, updates: Partial<PrimeMemoryEntry>) => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -476,17 +400,13 @@ function loadPrimeMemoryFromSqlite() {
     await saveMemoryEntries(updated);
     console.log('[PRIME-MEMORY] Updated memory entry:', id);
   }, [state.memoryEntries]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const addChatMessage = useCallback(async (message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -495,7 +415,6 @@ function loadPrimeMemoryFromSqlite() {
       id: `chat-prime-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -505,17 +424,13 @@ function loadPrimeMemoryFromSqlite() {
     console.log('[PRIME-MEMORY] Added chat message');
     return newMessage;
   }, [state.chatHistory]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const updateArc = useCallback(async (arcName: string, updates: Partial<ArcIndex>) => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -527,7 +442,6 @@ function loadPrimeMemoryFromSqlite() {
         a.arcName === arcName ? { ...a, ...updates, lastEvent: Date.now() } : a
       );
     } else {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -546,17 +460,13 @@ function loadPrimeMemoryFromSqlite() {
     await saveArcIndex(updated);
     console.log('[PRIME-MEMORY] Updated arc:', arcName);
   }, [state.arcIndex]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const updateCouncilProfile = useCallback(async (councilId: string, updates: Partial<CouncilProfile>) => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -568,7 +478,6 @@ function loadPrimeMemoryFromSqlite() {
         p.councilId === councilId ? { ...p, ...updates, lastUpdated: Date.now(), growthLevel: (updates.growthLevel ?? p.growthLevel) + 0.1 } : p
       );
     } else {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -591,17 +500,13 @@ function loadPrimeMemoryFromSqlite() {
     await saveCouncilProfiles(updated);
     console.log('[PRIME-MEMORY] Updated council profile:', councilId);
   }, [state.councilProfiles]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
   const createSystemSnapshot = useCallback(async (snapshot: Omit<SystemSnapshot, 'id' | 'timestamp'>) => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -610,7 +515,6 @@ function loadPrimeMemoryFromSqlite() {
       id: `snapshot-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: Date.now(),
     };
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -620,12 +524,9 @@ function loadPrimeMemoryFromSqlite() {
     console.log('[PRIME-MEMORY] Created system snapshot');
     return newSnapshot;
   }, [state.systemSnapshots]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -639,12 +540,9 @@ function loadPrimeMemoryFromSqlite() {
         e.tags && e.tags.some(t => domains.includes(t))
       );
     }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-    
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -658,22 +556,17 @@ function loadPrimeMemoryFromSqlite() {
     if (top.length === 0) {
       return 'No long-term memory loaded. Fresh session.';
     }
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-    
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
     const context = top.map(item => {
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
       const age = Math.floor((Date.now() - item.lastUpdated) / (1000 * 60 * 60 * 24));
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -683,12 +576,9 @@ function loadPrimeMemoryFromSqlite() {
     
     return `PRIME MEMORY (${top.length} items):\n\n${context}`;
   }, [state.memoryEntries]);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -710,12 +600,9 @@ function loadPrimeMemoryFromSqlite() {
     });
     console.log('[PRIME-MEMORY] Cleared ALL Prime memory systems');
   }, []);
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
-// --- SQLite-backed long-term memory helpers (slot-based) ---
 function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
@@ -764,6 +651,7 @@ function loadPrimeMemoryFromSqlite() {
     reloadMemory: loadAllMemory,
   };
 });
+
 
 
 
