@@ -3,6 +3,7 @@
   "packageManager": "npm@10.2.0",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "private": true,
   "scripts": {
     "start": "npx rork start -p fnr42tjhjpqit8s23rbh8 --tunnel",
     "start-web": "npx rork start -p fnr42tjhjpqit8s23rbh8 --web --tunnel",
@@ -11,6 +12,10 @@
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
+  "overrides": {
+    "expo-location": "19.0.8"
+  },
+  
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@hono/trpc-server": "^0.4.1",
@@ -67,3 +72,4 @@
   },
   "private": true
 }
+
