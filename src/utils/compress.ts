@@ -1,27 +1,29 @@
-﻿import { strToU8, strFromU8, gzipSync, gunzipSync } from "fflate";
+﻿import { strToU8, strFromU8, compressSync, decompressSync } from "fflate";
 
-/**
- * Compress JSON -> base64 string (gzip).
- * Safe for SQLite TEXT storage.
- */
-export function compressJson(value: any): string {
-  const json = JSON.stringify(value ?? null);
-  const u8 = strToU8(json);
-  const gz = gzipSync(u8);
-  return Buffer.from(gz).toString("base64");
+// Base64 helpers (RN-safe)
+function toBase64(bytes: Uint8Array) {
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  // eslint-disable-next-line no-undef
+  return globalThis.btoa(binary);
 }
 
-/**
- * Decompress base64 string -> JSON value.
- */
-export function decompressJson<T = any>(b64: string | null | undefined, fallback: T): T {
-  if (!b64) return fallback;
-  try {
-    const gz = Buffer.from(b64, "base64");
-    const u8 = gunzipSync(new Uint8Array(gz));
-    const json = strFromU8(u8);
-    return JSON.parse(json) as T;
-  } catch {
-    return fallback;
-  }
+function fromBase64(b64: string) {
+  // eslint-disable-next-line no-undef
+  const binary = globalThis.atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes;
+}
+
+export function compressToBase64(text: string) {
+  const u8 = strToU8(text);
+  const compressed = compressSync(u8);
+  return toBase64(compressed);
+}
+
+export function decompressFromBase64(b64: string) {
+  const bytes = fromBase64(b64);
+  const decompressed = decompressSync(bytes);
+  return strFromU8(decompressed);
 }

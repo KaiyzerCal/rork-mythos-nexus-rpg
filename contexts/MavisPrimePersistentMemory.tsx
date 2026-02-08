@@ -215,7 +215,44 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
 
   const omniSync = useCallback(async (gameStateSnapshot: any, reason: string = "manual") => {
     const snap = await createSystemSnapshot(gameStateSnapshot, "omnisync", reason);
-    return {
+    
+    // --- Persist all state to SQLite during OmniSync ---
+    try {
+      // Chat
+      try {
+        primeChatClearAll();
+        for (const m of (state as any)?.chatHistory ?? []) primeChatUpsert(m);
+      } catch (e) { console.warn("[OMNI-SYNC] chat persist failed:", e); }
+
+      // Arcs
+      try {
+        const arcs = (state as any)?.arcIndex ?? [];
+        arcsSaveAll(arcs);
+      } catch (e) { console.warn("[OMNI-SYNC] arcs persist failed:", e); }
+
+      // Councils
+      try {
+        const profiles = (state as any)?.councilProfiles ?? [];
+        councilSaveAll(profiles);
+      } catch (e) { console.warn("[OMNI-SYNC] council persist failed:", e); }
+
+      // Snapshots already inserted in createSystemSnapshot, but we also mark sync metadata
+      try {
+        jsonStoreSet("system", "last_omnisync", { at: Date.now(), reason, snapshotId: snap.id });
+      } catch (e) { console.warn("[OMNI-SYNC] marker persist failed:", e); }
+
+      // Optional: if you later add memoryEntries SQLite table, persist it here
+      // (only runs if a function named primeMemorySaveAll exists in this file)
+      try {
+        if (typeof (globalThis as any).primeMemorySaveAll === "function") {
+          (globalThis as any).primeMemorySaveAll((state as any)?.memoryEntries ?? []);
+        }
+      } catch (e) { /* ignore */ }
+
+    } catch (e) {
+      console.warn("[OMNI-SYNC] persist block failed:", e);
+    }
+return {
       ok: true,
       backend: jsonStoreGet("system", "storage_backend", { backend: "unknown" }),
       snapshotId: snap.id,
@@ -239,3 +276,5 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     clearChatSessionOnly,
   };
 });
+
+
