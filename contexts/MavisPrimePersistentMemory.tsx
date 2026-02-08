@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import createContextHook from '@nkzw/create-context-hook';
 
-import { insertMemory, getAllMemory } from "@/db/memory";
+import { insertMemory, getAllMemory } from "../src/db/memory";
 
 export function savePrimeMemoryToSqlite(args: {
   slot: number;
@@ -650,6 +650,7 @@ function loadPrimeMemoryFromSqlite_DUP_86() {
     reloadMemory: loadAllMemory,
   };
 });
+
 
 
 
