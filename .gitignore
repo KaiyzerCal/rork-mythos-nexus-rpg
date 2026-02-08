@@ -56,3 +56,6 @@ android/app/.cxx/
 
 _backup_mojibake_*/
 mojibake-report.csv
+*.bak
+*.bak2
+*-hits.txt
