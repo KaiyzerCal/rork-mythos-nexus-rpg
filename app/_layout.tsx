@@ -7,7 +7,7 @@ import { GameProvider } from "@/contexts/GameContext";
 import { MavisMemoryProvider } from "@/contexts/MavisMemoryContext";
 import { MavisPrimeMemoryProvider } from "@/contexts/MavisPrimePersistentMemory";
 import { trpc, trpcClient } from "@/lib/trpc.client";
-import { initDb } from "../db/schema";
+import { initDb } from "../src/db/schema";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -50,4 +50,5 @@ export default function RootLayout() {
     </trpc.Provider>
   );
 }
+
 
