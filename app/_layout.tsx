@@ -26,7 +26,14 @@ export default function RootLayout() {
     (async () => {
       try {
         initDb();
-      } catch (e) {
+        // One-time migration: AsyncStorage -> SQLite json_store
+        try {
+          const r = await migrateAsyncStorageToSqliteOnce({ wipeAsyncStorage: false });
+          console.log('[MIGRATION] AsyncStorage -> SQLite:', r);
+        } catch (e) {
+          console.warn('[MIGRATION] failed:', e);
+        }
+} catch (e) {
         console.warn("initDb failed:", e);
       } finally {
         await SplashScreen.hideAsync();
@@ -50,5 +57,6 @@ export default function RootLayout() {
     </trpc.Provider>
   );
 }
+
 
 
