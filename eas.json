@@ -1,10 +1,12 @@
 {
+  "cli": {
+    "appVersionSource": "remote"
+  },
   "build": {
     "vantara": {
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
+      "channel": "vantara",
+      "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_APP_MODE": "VANTARA",
         "EXPO_PUBLIC_RORK_API_BASE_URL": "https://mythos-nexus-api.vantaramavis.workers.dev"
@@ -12,9 +14,8 @@
     },
     "navi": {
       "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      },
+      "channel": "navi",
+      "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_APP_MODE": "NAVI",
         "EXPO_PUBLIC_RORK_API_BASE_URL": "https://mythos-navi-api.vantaramavis.workers.dev"
