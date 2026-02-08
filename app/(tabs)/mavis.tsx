@@ -68,7 +68,8 @@ export default function MavisScreen() {
   const { getMemoryContext, autoSaveFromConversation, conversationThreads, isLoaded: memoryLoaded } = useMavisMemory();
   const primeMemory = useMavisPrimeMemory();
   const [input, setInput] = useState('');
-  const [selectedMode, setSelectedMode] = useState<'chat' | 'cbt' | 'ritual' | 'board' | 'commands' | null>('chat');
+const [isSending, setIsSending] = useState(false);
+const cancelSendRef = useRef(false);const [selectedMode, setSelectedMode] = useState<'chat' | 'cbt' | 'ritual' | 'board' | 'commands' | null>('chat');
   const [currentMode, setCurrentMode] = useState('prime');
   const [boardActive, setBoardActive] = useState(false);
   const [enryuMode, setEnryuMode] = useState(false);
@@ -286,7 +287,8 @@ RELATIONSHIPS MODULE:
       const systemContext = getMavisContext();
       const prompt = `${systemContext}\n\nUser started CBT exercise: ${exercise.name} - ${exercise.description}. Guide them through it step by step with detailed instructions and motivation.`;
       console.log('[MAVIS] Sending CBT exercise request...');
-      const result = await sendMessage({ text: prompt });
+      const result = await sendMessage({ text: prompt });
+      if (cancelSendRef.current) return;
       console.log('[MAVIS] CBT exercise sent, result:', result);
       
       addXP(exercise.xpReward);
@@ -295,61 +297,28 @@ RELATIONSHIPS MODULE:
       console.error('[MAVIS] CBT error details:', JSON.stringify(err, null, 2));
     }
   };
-
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userInput = input.trim();
-    setInput('');
-
-    try {
-      console.log('[MAVIS-PRIME] Sending message:', userInput);
-      
-      await autoSaveFromConversation(userInput, 'user');
-      
-      await primeMemory.addChatMessage({
-        userMessage: userInput,
-        mavisReply: '',
-        mode: currentMode,
-        arcTag: '',
-        sessionId: `session-${Date.now()}`,
-        memoryFlag: false,
-      });
-      
-      const detectedMode = getModeFromMessage(userInput);
-      if (detectedMode) {
-        console.log('[MAVIS-PRIME] Mode switch detected:', detectedMode);
-        await switchMode(detectedMode);
-      }
-      
-      const command = detectCommand(userInput);
-      if (command) {
-        console.log('[MAVIS-PRIME] Command detected:', command);
-        await handleCommand(command, userInput);
-        return;
-      }
-      
-      const systemContext = getMavisContext();
-      console.log('[MAVIS-PRIME] System context length:', systemContext.length);
-      
-      const isFirstUserMessage = messages.length <= 1 || !messages.some(m => m.role === 'user');
-      const fullMessage = isFirstUserMessage 
-        ? `${systemContext}\n\nUser: ${userInput}`
-        : userInput;
-      
-      console.log('[MAVIS-PRIME] Full message prepared, calling sendMessage...');
-      const result = await sendMessage({ text: fullMessage });
-      console.log('[MAVIS-PRIME] Message sent successfully, result:', result);
-    } catch (err) {
-      console.error('[MAVIS-PRIME] ERROR sending message:', err);
-      console.error('[MAVIS-PRIME] Error details:', JSON.stringify(err, null, 2));
-    }
+  const handleCancelSend = () => {
+    cancelSendRef.current = true;
+    setIsSending(false);
   };
 
-  const handleQuickAction = async (prompt: string) => {
+  
+  param($m)
+  $body = $m.Groups[1].Value
+  $end  = $m.Groups[2].Value
+  # If there is already a try/catch, we won't attempt to restructure. We'll append a safe guard near the end.
+  if ($body -match 'try\s*\{') {
+    return $m.Value
+  } else {
+    # Wrap entire body in try/finally
+    $inner = $body -replace '(?ms)^const\s+handleSend\s*=\s*async\s*\(\)\s*=>\s*\{\s*', ''
+    return "const handleSend = async () => {`r`n    try {`r`n$inner`r`n    } finally {`r`n      setIsSending(false);`r`n    }`r`n};"
+  }
+const handleQuickAction = async (prompt: string) => {
     try {
       console.log('[MAVIS] Quick action:', prompt);
-      const result = await sendMessage({ text: prompt });
+      const result = await sendMessage({ text: prompt });
+      if (cancelSendRef.current) return;
       console.log('[MAVIS] Quick action sent, result:', result);
     } catch (err) {
       console.error('[MAVIS] Error in quick action:', err);
@@ -441,7 +410,8 @@ RELATIONSHIPS MODULE:
         return;
       default:
         const fullMessage = originalMessage;
-        await sendMessage({ text: fullMessage });
+        await sendMessage({ text: fullMessage });
+      if (cancelSendRef.current) return;
         return;
     }
     
@@ -867,7 +837,8 @@ return (<TouchableOpacity
                   const systemContext = getMavisContext();
                   const prompt = `${systemContext}\n\nUser completed the Ritual of Authorship. They've been granted 50 XP. Acknowledge this powerful act of creation with motivational feedback.`;
                   console.log('[MAVIS] Sending ritual completion...');
-                  const result = await sendMessage({ text: prompt });
+                  const result = await sendMessage({ text: prompt });
+      if (cancelSendRef.current) return;
                   console.log('[MAVIS] Ritual completed, result:', result);
                 } catch (err) {
                   console.error('[MAVIS] Error completing ritual:', err);
@@ -903,10 +874,14 @@ return (<TouchableOpacity
           />
           <TouchableOpacity
             style={[styles.sendButton, enryuMode && { backgroundColor: 'rgba(220, 20, 60, 0.3)' }, !input.trim() && styles.sendButtonDisabled]}
-            onPress={handleSend}
+            onPress={isSending ? handleCancelSend : handleSend}
             disabled={!input.trim()}
           >
-            <Send size={20} color={input.trim() ? (enryuMode ? '#DC143C' : '#9400D3') : '#666'} />
+            {isSending ? (
+  <X size={20} color={'#666'} />
+) : (
+  <Send size={20} color={input.trim() ? (enryuMode ? '#DC143C' : '#9400D3') : '#666'} />
+)}
           </TouchableOpacity>
         </LinearGradient>
       </View>
@@ -1316,6 +1291,13 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
 });
+
+
+
+
+
+
+
 
 
 
