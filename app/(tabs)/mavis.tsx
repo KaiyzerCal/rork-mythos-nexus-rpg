@@ -30,7 +30,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { loadChatHistory } from "../../lib/persistence/mavisMemory";
 
-import { copyToClipboard, pasteFromClipboard } from "../src/utils/clipboard";
+import { copyToClipboard, pasteFromClipboard } from "../../src/utils/clipboard";
 const CBT_EXERCISES = [
   {
     id: 'breath1',
@@ -1316,6 +1316,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
   },
 });
+
 
 
 
