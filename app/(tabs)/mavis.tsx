@@ -287,7 +287,8 @@ RELATIONSHIPS MODULE:
       const systemContext = getMavisContext();
       const prompt = `${systemContext}\n\nUser started CBT exercise: ${exercise.name} - ${exercise.description}. Guide them through it step by step with detailed instructions and motivation.`;
       console.log('[MAVIS] Sending CBT exercise request...');
-      const result = await sendMessage({ text: prompt });
+      const result = await sendMessage({ text: prompt });
+
       if (cancelSendRef.current) return;
       console.log('[MAVIS] CBT exercise sent, result:', result);
       
@@ -304,27 +305,6 @@ RELATIONSHIPS MODULE:
 
   
   param($m)
-  $body = $m.Groups[1].Value
-  $end  = $m.Groups[2].Value
-  # If there is already a try/catch, we won't attempt to restructure. We'll append a safe guard near the end.
-  if ($body -match 'try\s*\{') {
-    return $m.Value
-  } else {
-    # Wrap entire body in try/finally
-    $inner = $body -replace '(?ms)^const\s+handleSend\s*=\s*async\s*\(\)\s*=>\s*\{\s*', ''
-    return "const handleSend = async () => {`r`n    try {`r`n$inner`r`n    } finally {`r`n      setIsSending(false);`r`n    }`r`n};"
-  }
-const handleQuickAction = async (prompt: string) => {
-    try {
-      console.log('[MAVIS] Quick action:', prompt);
-      const result = await sendMessage({ text: prompt });
-      if (cancelSendRef.current) return;
-      console.log('[MAVIS] Quick action sent, result:', result);
-    } catch (err) {
-      console.error('[MAVIS] Error in quick action:', err);
-      console.error('[MAVIS] Quick action error details:', JSON.stringify(err, null, 2));
-    }
-  };
 
   const switchMode = async (newMode: string) => {
     setCurrentMode(newMode);
@@ -410,7 +390,8 @@ const handleQuickAction = async (prompt: string) => {
         return;
       default:
         const fullMessage = originalMessage;
-        await sendMessage({ text: fullMessage });
+        await sendMessage({ text: fullMessage });
+
       if (cancelSendRef.current) return;
         return;
     }
@@ -837,7 +818,8 @@ return (<TouchableOpacity
                   const systemContext = getMavisContext();
                   const prompt = `${systemContext}\n\nUser completed the Ritual of Authorship. They've been granted 50 XP. Acknowledge this powerful act of creation with motivational feedback.`;
                   console.log('[MAVIS] Sending ritual completion...');
-                  const result = await sendMessage({ text: prompt });
+                  const result = await sendMessage({ text: prompt });
+
       if (cancelSendRef.current) return;
                   console.log('[MAVIS] Ritual completed, result:', result);
                 } catch (err) {
