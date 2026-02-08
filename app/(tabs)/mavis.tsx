@@ -566,9 +566,6 @@ return (<KeyboardAvoidingView
             const baseKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}-${msg.role}`;
             const uniqueKey = `${baseKey}-${idx}`;
 
-// DUPLICATE REMOVED: const handleCopy = async (text: string) => {
-  await copyToClipboard(text);
-};
 
 return (<View
               key={uniqueKey}
@@ -601,16 +598,7 @@ return (<View
                       }
                       const basePartKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}`;
                       const partKey = `${basePartKey}-part-${partIdx}`;
-// DUPLICATE REMOVED:                       const handlePaste = async () => {
-  const text = await pasteFromClipboard();
-  if (!text) return;
-  // TODO: change setInput(...) to your actual input setter if different
-  setInput((prev: string) => (prev ? (prev + " " + text) : text));
-};
 
-// DUPLICATE REMOVED: const handleCopy = async (text: string) => {
-  await copyToClipboard(text);
-};
 
 return (<Text key={partKey} style={styles.messageContent}>
                           {textPart.text}
@@ -622,16 +610,7 @@ return (<Text key={partKey} style={styles.messageContent}>
                       if (toolPart.state === 'input-streaming' || toolPart.state === 'input-available') {
                         const basePartKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}`;
                         const partKey = `${basePartKey}-tool-${partIdx}`;
-// DUPLICATE REMOVED:                         const handlePaste = async () => {
-  const text = await pasteFromClipboard();
-  if (!text) return;
-  // TODO: change setInput(...) to your actual input setter if different
-  setInput((prev: string) => (prev ? (prev + " " + text) : text));
-};
 
-// DUPLICATE REMOVED: const handleCopy = async (text: string) => {
-  await copyToClipboard(text);
-};
 
 return (<Text key={partKey} style={[styles.messageContent, { fontStyle: 'italic', opacity: 0.7 }]}>
                             Thinking...
@@ -717,16 +696,7 @@ return (<Text key={partKey} style={[styles.messageContent, { fontStyle: 'italic'
             <View style={styles.quickActionsRow}>
               {quickActions.map((action, index) => {
                 const Icon = action.icon;
-// DUPLICATE REMOVED:                 const handlePaste = async () => {
-  const text = await pasteFromClipboard();
-  if (!text) return;
-  // TODO: change setInput(...) to your actual input setter if different
-  setInput((prev: string) => (prev ? (prev + " " + text) : text));
-};
 
-// DUPLICATE REMOVED: const handleCopy = async (text: string) => {
-  await copyToClipboard(text);
-};
 
 return (<TouchableOpacity
                     key={index}
