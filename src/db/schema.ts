@@ -1,8 +1,9 @@
 ﻿import { db } from "./db";
 
 /**
- * memory_vault = LONG-TERM MEMORY (PROTECTED)
- * messages / threads / stream_state = SAFE TO CLEAR
+ * DB schema (chat/session + long-term memory)
+ * - messages / threads / stream_state = clearable
+ * - memory_vault = protected LTM (slot-based)
  */
 export function initDb() {
   db.execSync(`
@@ -28,12 +29,18 @@ export function initDb() {
 
     CREATE TABLE IF NOT EXISTS memory_vault (
       id TEXT PRIMARY KEY NOT NULL,
+      slot INTEGER NOT NULL,
       kind TEXT NOT NULL,
       title TEXT,
       content TEXT NOT NULL,
       tags TEXT,
+      importance INTEGER DEFAULT 0,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     );
+
+    CREATE INDEX IF NOT EXISTS idx_memory_slot ON memory_vault(slot);
+    CREATE INDEX IF NOT EXISTS idx_memory_kind ON memory_vault(kind);
+    CREATE INDEX IF NOT EXISTS idx_memory_updated ON memory_vault(updated_at);
   `);
 }
