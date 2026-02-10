@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, Plus, Calendar, Tag, Sparkles } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Alert } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MemoryCodexScreen() {
@@ -144,7 +145,15 @@ export default function MemoryCodexScreen() {
                       <Sparkles size={20} color="#9400D3" />
                     </View>
                     <View style={styles.entryInfo}>
-                      <Text style={styles.entryTitle}>{entry.title}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={[styles.entryTitle, { flex: 1 }]}>{entry.title}</Text>
+                        <CopyButton
+                          text={`${entry.title}\n${entry.mood ? `Mood: ${entry.mood}\n` : ''}${entry.content}${entry.tags.length > 0 ? `\nTags: ${entry.tags.join(', ')}` : ''}`}
+                          size={12}
+                          color="#9400D3"
+                          iconOnly
+                        />
+                      </View>
                       <View style={styles.entryMeta}>
                         <Calendar size={12} color="#999" />
                         <Text style={styles.entryDate}>{formatDate(entry.timestamp)}</Text>

@@ -2,6 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Medal, TrendingUp, Shield, Zap, Plus, X, Edit2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { RosterEntry } from '@/types/rpg';
 
@@ -480,6 +481,13 @@ export default function RankingsScreen() {
                     <Text style={styles.detailNotes}>{selectedEntry.notes}</Text>
                   </View>
                 )}
+
+                <CopyButton
+                  text={`${selectedEntry.display} [${selectedEntry.role.toUpperCase()}]\nLevel: ${selectedEntry.level} | Rank: ${selectedEntry.rank}\nGPR: ${selectedEntry.gpr} | PvP: ${(selectedEntry.pvp / 1000).toFixed(1)}/10\nJJK: ${selectedEntry.jjkGrade} | OP: ${selectedEntry.opTier} | ${selectedEntry.influence}${selectedEntry.notes ? `\nNotes: ${selectedEntry.notes}` : ''}`}
+                  label="Copy Entry"
+                  color="#E7A857"
+                  style={{ marginBottom: 16 }}
+                />
 
                 <View style={styles.detailActions}>
                   <Pressable

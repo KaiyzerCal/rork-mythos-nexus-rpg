@@ -2,6 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Package, Plus, Trash2, X, Scan, Edit2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { InventoryItemV2 } from '@/types/rpg';
 
@@ -298,12 +299,20 @@ Respond with ONLY a valid JSON object in this exact format (no markdown, no expl
                     <Text style={styles.itemSlot}>{item.slot}</Text>
                   </View>
                 </View>
-                <Pressable
-                  onPress={() => handleDeleteItem(item.id)}
-                  style={styles.deleteButton}
-                >
-                  <Trash2 size={18} color="#E75757" />
-                </Pressable>
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                  <CopyButton
+                    text={`${item.name} [${item.tier}] - ${item.slot}\n${item.description}\nEffects: ${item.effects.map(e => `${e.label}: +${e.value}${e.unit}`).join(', ')}`}
+                    size={14}
+                    color="#08C284"
+                    iconOnly
+                  />
+                  <Pressable
+                    onPress={() => handleDeleteItem(item.id)}
+                    style={styles.deleteButton}
+                  >
+                    <Trash2 size={18} color="#E75757" />
+                  </Pressable>
+                </View>
               </View>
 
               <Text style={styles.itemDescription}>{item.description}</Text>

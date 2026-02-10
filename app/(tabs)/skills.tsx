@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Zap, Lock, CheckCircle, TrendingUp, Sparkles } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SkillsScreen() {
@@ -127,6 +128,13 @@ export default function SkillsScreen() {
               >
                 <View style={styles.skillHeader}>
                   <View style={styles.skillHeaderLeft}>
+                    <CopyButton
+                      text={`${skill.name} (T${skill.tier})\nEnergy: ${skill.energyType}\n${skill.description}\nStatus: ${skill.unlocked ? 'UNLOCKED' : 'LOCKED'}${!skill.unlocked ? ` | Cost: ${skill.cost} CP` : ''}`}
+                      size={12}
+                      color={energyColor}
+                      iconOnly
+                      style={{ marginRight: 6 }}
+                    />
                     <View style={[styles.tierBadge, { backgroundColor: tierColor + '40', borderColor: tierColor }]}>
                       <Text style={[styles.tierText, { color: tierColor }]}>T{skill.tier}</Text>
                     </View>

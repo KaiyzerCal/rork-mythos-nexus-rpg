@@ -2,6 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Plus, Edit2, Trash2, X } from 'lucide-react-native';
 import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { EnergyLevel, EnergyStatus } from '@/types/rpg';
 
@@ -106,6 +107,12 @@ export default function EnergyScreen() {
               <View style={styles.energyHeader}>
                 <Text style={styles.energyName}>{energy.type}</Text>
                 <View style={styles.actionButtons}>
+                  <CopyButton
+                    text={`${energy.type}: ${energy.current}/${energy.max} (${energy.status?.toUpperCase() || 'DEVELOPING'})\n${energy.description}`}
+                    size={14}
+                    color="#08C284"
+                    iconOnly
+                  />
                   <Pressable
                     onPress={() => handleOpenEdit(energy)}
                     style={styles.iconButton}

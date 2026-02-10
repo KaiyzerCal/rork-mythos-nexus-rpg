@@ -2,6 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Modal, Alert, Keyboard } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import { Users, Crown, Lightbulb, Eye, MessageCircle, Send, ChevronLeft, Plus, Edit2, Trash2, X, RefreshCw, StopCircle } from 'lucide-react-native';
+import CopyButton from '@/components/CopyButton';
 import { useRorkAgent, generateObject } from '@rork-ai/toolkit-sdk';
 import { z } from 'zod';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -420,6 +421,16 @@ Does this conversation meaningfully contribute to character growth?`,
                   msg.role === 'user' ? styles.userMessageCard : styles.assistantMessageCard,
                 ]}
               >
+                {msg.role === 'assistant' && (
+                  <View style={{ alignItems: 'flex-end', marginBottom: 4 }}>
+                    <CopyButton
+                      text={msg.parts.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && !!(p as any).text).map(p => (p as any).text).join('\n')}
+                      size={12}
+                      color="#666"
+                      iconOnly
+                    />
+                  </View>
+                )}
                 {msg.parts
                   .map((part, partIdx) => {
                     if (part.type === 'text') {

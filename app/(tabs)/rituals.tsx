@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Flame, CheckCircle, Circle, Award, TrendingUp } from 'lucide-react-native';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RitualsScreen() {
@@ -159,8 +160,16 @@ export default function RitualsScreen() {
                       </Text>
                     </View>
 
-                    <View style={styles.rewardContainer}>
-                      <Text style={styles.xpLabel}>+{ritual.xpReward} XP</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <CopyButton
+                        text={`${ritual.name} [${(ritual.category || 'other').toUpperCase()}]\n${ritual.description}\n+${ritual.xpReward} XP | Streak: ${ritual.streak}${ritual.completed ? ' | COMPLETED' : ''}`}
+                        size={12}
+                        color={categoryColor}
+                        iconOnly
+                      />
+                      <View style={styles.rewardContainer}>
+                        <Text style={styles.xpLabel}>+{ritual.xpReward} XP</Text>
+                      </View>
                     </View>
                   </View>
 

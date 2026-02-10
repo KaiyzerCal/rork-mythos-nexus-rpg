@@ -29,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import { useGame } from '@/contexts/GameContext';
 import * as Haptics from 'expo-haptics';
+import CopyButton from '@/components/CopyButton';
 
 interface SettingToggle {
   notifications: boolean;
@@ -124,9 +125,17 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.profileDetailsCard}>
-          <Text style={styles.sectionTitle}>
-            <User size={16} color="#08C284" /> Profile Details
-          </Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={styles.sectionTitle}>
+              <User size={16} color="#08C284" /> Profile Details
+            </Text>
+            <CopyButton
+              text={`${identity.inscribedName} — ${identity.titles[0]}\nLevel: ${stats.level} | Rank: ${stats.rank}\nSpecies: ${identity.speciesLineage[identity.speciesLineage.length - 1]}\nTerritory: ${identity.territory.class}\nFloor: ${gameState.currentFloor} | Form: ${gameState.currentForm}\nCodex: ${stats.codexIntegrity}% | Sync: ${stats.fullCowlSync}%\nPvP: ${gameState.pvpRating} | GPR: ${gameState.gpr}`}
+              label="Copy"
+              color="#08C284"
+              size={12}
+            />
+          </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Territory</Text>
             <Text style={styles.detailValue}>{identity.territory.class}</Text>

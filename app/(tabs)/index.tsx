@@ -1,6 +1,7 @@
 import { useGame } from '@/contexts/GameContext';
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Modal, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Edit2, X, Search, Package, Medal, TowerControl, Zap, Sparkles, BookLock, ShoppingCart, Settings } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -114,6 +115,13 @@ export default function StatusScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>Black Sun Monarch</Text>
           <Text style={styles.subtitle}>CodexOS v21.1</Text>
+          <CopyButton
+            text={`${identity.inscribedName} — Level ${stats.level} ${stats.rank} Rank\nXP: ${stats.xp}/${stats.xpToNextLevel}\nForm: ${currentForm} (${currentBPM} BPM)\nFloor: ${currentFloor} | Sync: ${stats.fullCowlSync}%\nSTR ${stats.STR} AGI ${stats.AGI} VIT ${stats.VIT} INT ${stats.INT} WIS ${stats.WIS} CHA ${stats.CHA} LCK ${stats.LCK}`}
+            label="Copy Stats"
+            color="#08C284"
+            size={12}
+            style={{ marginTop: 10 }}
+          />
         </View>
 
         <View style={styles.currenciesCard}>

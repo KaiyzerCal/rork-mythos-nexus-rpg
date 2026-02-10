@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Users, Heart, Shield, Swords, Star } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { AllyData } from '@/types/rpg';
 
@@ -160,6 +161,12 @@ export default function AlliesScreen() {
                     </View>
 
                     <View style={styles.actionButtons}>
+                      <CopyButton
+                        text={`${ally.name} [${ally.relationship.toUpperCase()}]\nLevel: ${ally.level} | Affinity: ${ally.affinity}%\nSpecialty: ${ally.specialty}`}
+                        size={12}
+                        color={color}
+                        iconOnly
+                      />
                       <TouchableOpacity style={[styles.actionButton, { backgroundColor: `${color}20` }]}>
                         <Text style={[styles.actionText, { color }]}>INTERACT</Text>
                       </TouchableOpacity>

@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Shield, Plus, Lock, Calendar, AlertCircle, Edit2, Trash2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, Modal } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { VaultEntry } from '@/types/rpg';
 
@@ -306,6 +307,13 @@ export default function VaultCodexScreen() {
                     </Text>
 
                     <View style={styles.vaultActions}>
+                      <CopyButton
+                        text={`${entry.title}\n[${entry.category.toUpperCase()}] [${entry.importance.toUpperCase()}]\n${entry.content}`}
+                        size={14}
+                        color={categoryColor}
+                        iconOnly
+                        style={{ marginRight: 4 }}
+                      />
                       <TouchableOpacity
                         style={[styles.actionButton, { backgroundColor: `${categoryColor}20` }]}
                         onPress={() => {
@@ -411,6 +419,13 @@ export default function VaultCodexScreen() {
                 <Text style={styles.modalContentLabel}>CONTENT</Text>
                 <Text style={styles.modalContentText}>{viewingEntry.content}</Text>
               </View>
+
+              <CopyButton
+                text={`${viewingEntry.title}\n[${viewingEntry.category.toUpperCase()}] [${viewingEntry.importance.toUpperCase()}]\n\n${viewingEntry.content}`}
+                label="Copy Entry"
+                color={getCategoryColor(viewingEntry.category)}
+                style={{ marginBottom: 16 }}
+              />
 
               <View style={styles.modalActions}>
                 <TouchableOpacity

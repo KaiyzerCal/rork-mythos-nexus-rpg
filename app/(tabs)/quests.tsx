@@ -2,6 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Target, Plus, Check, X, Trash2, CheckSquare, Repeat, Flame, Edit } from 'lucide-react-native';
 import React, { useState, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Quest, QuestType, QuestStatus, Task, TaskType, TaskRecurrence } from '@/types/rpg';
 
@@ -403,6 +404,12 @@ export default function QuestsScreen() {
                   <Text style={styles.questTitle}>{quest.title}</Text>
                 </View>
                 <View style={styles.questActions}>
+                  <CopyButton
+                    text={`${quest.title} [${quest.type.toUpperCase()}]\n${quest.description || ''}\nStatus: ${quest.status}${quest.progress ? ` | Progress: ${quest.progress.current}/${quest.progress.target}` : ''}\nXP: ${quest.xpReward}`}
+                    size={14}
+                    color="#08C284"
+                    iconOnly
+                  />
                   {quest.status === 'active' && (
                     <Pressable
                       onPress={() => completeQuest(quest.id)}

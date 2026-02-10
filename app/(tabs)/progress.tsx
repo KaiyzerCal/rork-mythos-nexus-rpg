@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles, Scroll, CheckCircle, Circle, Lock, TrendingUp } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View, TouchableOpacity, Animated } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type Tab = 'skills' | 'quests' | 'achievements';
@@ -45,6 +46,13 @@ export default function ProgressScreen() {
         <View style={styles.header}>
           <TrendingUp size={32} color="#FFD700" strokeWidth={2.5} />
           <Text style={styles.title}>PROGRESSION</Text>
+          <CopyButton
+            text={`PROGRESSION SUMMARY\nActive Quests: ${quests.filter(q => q.status === 'active').length}\nCompleted Quests: ${quests.filter(q => q.status === 'completed').length}\nUnlocked Skills: ${skillTrees.filter(s => s.unlocked).length}/${skillTrees.length}\nCodex Points: ${codexPoints}`}
+            label="Copy Summary"
+            color="#FFD700"
+            size={12}
+            style={{ marginTop: 8 }}
+          />
         </View>
 
         <View style={styles.tabBar}>

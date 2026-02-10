@@ -2,7 +2,8 @@ import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { User, Star, Zap, Crown, Shield, Flame } from 'lucide-react-native';
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CharacterScreen() {
@@ -13,6 +14,26 @@ export default function CharacterScreen() {
   const questsCompleted = gameState.quests.filter((q) => q.status === 'completed').length;
   const totalSkills = gameState.skillTrees.filter((s) => s.unlocked).length;
   const activeEnergies = gameState.energySystems.filter((e) => e.current > 0).length;
+
+  const getFullCharacterText = () => {
+    return `CHARACTER SHEET — ${gameState.identity.inscribedName}
+
+Title: ${gameState.identity.titles[0]}
+Species: ${gameState.identity.speciesLineage[gameState.identity.speciesLineage.length - 1]}
+Aura: ${gameState.stats.auraPower}
+
+Level: ${gameState.stats.level} | Rank: ${gameState.stats.rank}
+GPR: ${gameState.gpr} | PVP: ${gameState.pvpRating}
+Floor: ${gameState.currentFloor} | XP Total: ${totalXPEarned}
+Quests Completed: ${questsCompleted} | Skills: ${totalSkills}
+
+STR: ${gameState.stats.STR} | INT: ${gameState.stats.INT} | VIT: ${gameState.stats.VIT}
+AGI: ${gameState.stats.AGI} | WIS: ${gameState.stats.WIS} | CHA: ${gameState.stats.CHA}
+
+Current Form: ${gameState.currentForm} | BPM: ${gameState.currentBPM}
+Sync: ${gameState.stats.fullCowlSync}% | Fatigue: ${gameState.stats.fatigue}/100
+Codex Integrity: ${gameState.stats.codexIntegrity}%`;
+  };
 
   return (
     <View style={styles.container}>
@@ -35,6 +56,7 @@ export default function CharacterScreen() {
           </View>
           <Text style={styles.title}>CHARACTER SHEET</Text>
           <Text style={styles.playerName}>{gameState.identity.inscribedName}</Text>
+          <CopyButton text={getFullCharacterText()} label="Copy All" color="#FFD700" style={{ marginTop: 12 }} />
         </View>
 
         <View style={styles.identityCard}>

@@ -2,6 +2,7 @@ import { useGame } from '@/contexts/GameContext';
 import { Flame, Zap, Info, Check, Plus, Edit2, Trash2, Save, X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, Modal, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import CopyButton from '@/components/CopyButton';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { TransformationData, Buff, Ability } from '@/types/rpg';
 
@@ -224,6 +225,13 @@ export default function TransformationsScreen() {
             >
               <View style={styles.formHeader}>
                 <View style={styles.formTitleRow}>
+                  <CopyButton
+                    text={`${form.name} [${form.tier}]\nBPM: ${form.bpmRange} | Energy: ${form.energy}\nJJK: ${form.jjkGrade} | OP: ${form.opTier}\n${form.unlocked ? 'UNLOCKED' : 'LOCKED'}${isActive ? ' | ACTIVE' : ''}`}
+                    size={12}
+                    color={isActive ? '#08C284' : '#666'}
+                    iconOnly
+                    style={{ marginRight: 6 }}
+                  />
                   <Text style={[styles.formName, isActive && styles.formNameActive]}>
                     {form.name}
                   </Text>
