@@ -1,6 +1,7 @@
 import createContextHook from '@nkzw/create-context-hook';
 import Storage from '@/utils/storage';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { trpcClient } from '@/lib/trpc';
 
 export interface MemoryItem {
   id: string;
@@ -35,6 +36,7 @@ interface MavisMemoryState {
 
 const MAVIS_MEMORY_KEY = 'mavis_prime_memory_v2';
 const MAVIS_CONVERSATIONS_KEY = 'mavis_conversation_threads_v1';
+const LTM_BACKEND_SYNC_DEBOUNCE_MS = 12000;
 
 export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
   const [state, setState] = useState<MavisMemoryState>({
@@ -42,6 +44,9 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
     conversationThreads: [],
     isLoaded: false,
   });
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  const ltmSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadMemory();
@@ -85,6 +90,45 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
       }
       
       setState({ memoryItems, conversationThreads, isLoaded: true });
+
+      try {
+        console.log('[MAVIS-MEMORY] Attempting to load long-term memory from backend...');
+        const backendData = await trpcClient.memory.getGlobalMemory.query({ scope: 'long_term_memory' });
+        const backendFacts = backendData?.facts || [];
+        if (backendFacts.length > 0) {
+          const localIds = new Set(memoryItems.map(m => m.id));
+          const newFromBackend: MemoryItem[] = backendFacts
+            .filter((f: any) => !localIds.has(f.id) && !localIds.has(f.key))
+            .map((f: any) => {
+              let parsed: any = {};
+              try { parsed = typeof f.value === 'string' ? JSON.parse(f.value) : f; } catch { parsed = { content: f.value }; }
+              return {
+                id: f.id || f.key || `backend-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                type: (parsed.type || 'conversation') as MemoryItem['type'],
+                content: parsed.content || f.value || '',
+                createdAt: parsed.createdAt || Date.now(),
+                updatedAt: parsed.updatedAt || Date.now(),
+                importanceScore: (parsed.importanceScore || 2) as 1 | 2 | 3,
+                domains: parsed.domains || ['general'],
+                tags: parsed.tags || [],
+              };
+            });
+          if (newFromBackend.length > 0) {
+            const merged = [...memoryItems, ...newFromBackend];
+            setState(prev => ({ ...prev, memoryItems: merged }));
+            await saveMemory(merged);
+            console.log(`[MAVIS-MEMORY] Merged ${newFromBackend.length} items from backend. Total: ${merged.length}`);
+          }
+        }
+
+        const backendThreads = await trpcClient.memory.getGlobalMemory.query({ scope: 'conversation_threads' });
+        const threadFacts = backendThreads?.facts || [];
+        if (threadFacts.length > 0 && threadFacts.length > conversationThreads.length) {
+          console.log(`[MAVIS-MEMORY] Backend has ${threadFacts.length} thread records`);
+        }
+      } catch (backendError) {
+        console.log('[MAVIS-MEMORY] Backend load skipped (non-fatal):', (backendError as Error)?.message);
+      }
     } catch (error) {
       console.error('[MAVIS-MEMORY] Failed to load memory:', error);
       setState({ memoryItems: [], conversationThreads: [], isLoaded: true });
@@ -120,6 +164,71 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
     }
   };
 
+  const syncLTMToBackend = useCallback(() => {
+    if (ltmSyncTimerRef.current) {
+      clearTimeout(ltmSyncTimerRef.current);
+    }
+    ltmSyncTimerRef.current = setTimeout(async () => {
+      const currentState = stateRef.current;
+      if (currentState.memoryItems.length === 0) return;
+      try {
+        console.log('[MAVIS-MEMORY] Syncing long-term memory to backend...');
+        await trpcClient.system.syncNow.mutate({
+          mode: 'ltm_auto',
+          reason: 'Auto-sync long-term memory',
+          include: { memory: true, vault: false, stats: false, skills: false, quests: false, council: false },
+          payload: {
+            longTermMemory: currentState.memoryItems.map(item => ({
+              id: item.id,
+              type: item.type,
+              content: item.content,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt,
+              importanceScore: item.importanceScore,
+              domains: item.domains,
+              tags: item.tags,
+              conversationId: item.conversationId,
+            })),
+            conversationThreads: currentState.conversationThreads,
+          },
+        });
+
+        const importantItems = currentState.memoryItems.filter(m => m.importanceScore >= 2);
+        for (const item of importantItems.slice(0, 100)) {
+          trpcClient.memory.upsertMemoryFact.mutate({
+            key: `ltm_${item.id}`,
+            value: JSON.stringify({
+              type: item.type,
+              content: item.content,
+              createdAt: item.createdAt,
+              updatedAt: item.updatedAt,
+              importanceScore: item.importanceScore,
+              domains: item.domains,
+              tags: item.tags,
+            }),
+            confidence: item.importanceScore / 3,
+            source: item.type,
+            scope: 'long_term_memory',
+          }).catch(err => console.warn('[MAVIS-MEMORY] Failed to sync LTM fact:', err));
+        }
+
+        for (const thread of currentState.conversationThreads.slice(0, 50)) {
+          trpcClient.memory.upsertMemoryFact.mutate({
+            key: `thread_${thread.id}`,
+            value: JSON.stringify(thread),
+            confidence: 0.9,
+            source: 'conversation',
+            scope: 'conversation_threads',
+          }).catch(err => console.warn('[MAVIS-MEMORY] Failed to sync thread:', err));
+        }
+
+        console.log(`[MAVIS-MEMORY] Backend sync complete: ${currentState.memoryItems.length} items, ${currentState.conversationThreads.length} threads`);
+      } catch (error) {
+        console.warn('[MAVIS-MEMORY] Backend sync failed (non-fatal):', (error as Error)?.message);
+      }
+    }, LTM_BACKEND_SYNC_DEBOUNCE_MS);
+  }, []);
+
   const addMemoryItem = useCallback(async (item: Omit<MemoryItem, 'id' | 'createdAt' | 'updatedAt'>) => {
     const newItem: MemoryItem = {
       ...item,
@@ -136,8 +245,9 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
     await saveMemory(updatedItems);
     
     console.log('[MAVIS-MEMORY] Added new memory item:', newItem.type, '-', newItem.content.substring(0, 50));
+    syncLTMToBackend();
     return newItem;
-  }, []);
+  }, [syncLTMToBackend]);
 
   const updateMemoryItem = useCallback(async (id: string, updates: Partial<MemoryItem>) => {
     let updatedItems: MemoryItem[] = [];
@@ -175,8 +285,9 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
     await saveConversationThreads(updatedThreads);
     
     console.log('[MAVIS-MEMORY] Created conversation thread:', thread.id);
+    syncLTMToBackend();
     return thread;
-  }, []);
+  }, [syncLTMToBackend]);
   
   const updateConversationThread = useCallback(async (threadId: string, updates: Partial<ConversationThread>) => {
     let updatedThreads: ConversationThread[] = [];
@@ -341,5 +452,6 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
     createConversationThread,
     updateConversationThread,
     reloadMemory: loadMemory,
+    syncLTMToBackend,
   };
 });

@@ -94,6 +94,8 @@ const PRIME_BACKEND_SYNC_KEY = 'mavis_prime_last_backend_sync';
 
 const COMPRESSION_THRESHOLD = 5000;
 const COMPRESSION_TARGET = 3000;
+const AUTO_SYNC_INTERVAL_MS = 60000;
+const MEMORY_SYNC_DEBOUNCE_MS = 10000;
 
 export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook(() => {
   const [state, setState] = useState<MavisPrimeMemoryState>({
@@ -109,6 +111,9 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
   });
   const stateRef = useRef(state);
   stateRef.current = state;
+  const memorySyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoSyncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pendingMemorySyncRef = useRef(false);
 
   useEffect(() => {
     loadAllMemory();
@@ -197,7 +202,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     localSnapshots: SystemSnapshot[],
   ) => {
     try {
-      console.log('[PRIME-MEMORY] Attempting to load from backend...');
+      console.log('[PRIME-MEMORY] Attempting to load ALL data from backend...');
       const snapshot = await trpcClient.system.getSystemSnapshot.query({
         include: { memory: true, recent_threads: true, tabs: false, stats: false, skills: false, quests: false, forms: false, vault: false, council: false },
       });
@@ -207,26 +212,59 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         return;
       }
 
-      const backendMemory: any[] = (snapshot as any).memory_entries || [];
-      const backendLTM: any[] = (snapshot as any).long_term_memory || [];
+      const snapshotData = snapshot as any;
+      const backendMemory: PrimeMemoryEntry[] = snapshotData.memory_entries || [];
+      const backendLTM: any[] = snapshotData.long_term_memory || [];
+      const backendThreads: any[] = snapshotData.threads_recent || [];
+      let hasUpdates = false;
 
-      if (backendMemory.length > 0 && backendMemory.length > localMemory.length) {
-        console.log(`[PRIME-MEMORY] Backend has more memory entries (${backendMemory.length}) than local (${localMemory.length}), merging...`);
+      if (backendMemory.length > 0) {
         const localIds = new Set(localMemory.map(m => m.id));
         const newEntries = backendMemory.filter((m: any) => !localIds.has(m.id));
         if (newEntries.length > 0) {
           const merged = [...localMemory, ...newEntries].sort((a, b) => b.lastUpdated - a.lastUpdated);
           setState(prev => ({ ...prev, memoryEntries: merged }));
           await saveMemoryEntries(merged);
-          console.log(`[PRIME-MEMORY] Merged ${newEntries.length} new entries from backend (no cap)`);
+          console.log(`[PRIME-MEMORY] Merged ${newEntries.length} new memory entries from backend. Total: ${merged.length}`);
+          hasUpdates = true;
         }
       }
 
       if (backendLTM.length > 0) {
-        console.log(`[PRIME-MEMORY] Loaded ${backendLTM.length} long-term memory items from backend`);
+        console.log(`[PRIME-MEMORY] Backend has ${backendLTM.length} long-term memory items`);
+        const ltmAsMemory: PrimeMemoryEntry[] = backendLTM
+          .filter((item: any) => item.memoryKey || item.key)
+          .map((item: any) => ({
+            id: item.id || `ltm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            timestamp: item.timestamp || Date.now(),
+            memoryType: item.memoryType || 'preference' as const,
+            memoryKey: item.memoryKey || item.key || '',
+            memoryValue: item.memoryValue || item.value || '',
+            lastUpdated: item.lastUpdated || Date.now(),
+            importance: item.importance || 2 as const,
+            arc: item.arc,
+            tags: item.tags || [],
+          }));
+
+        if (ltmAsMemory.length > 0) {
+          const currentEntries = stateRef.current.memoryEntries;
+          const existingIds = new Set(currentEntries.map(m => m.id));
+          const newLTM = ltmAsMemory.filter(m => !existingIds.has(m.id));
+          if (newLTM.length > 0) {
+            const merged = [...currentEntries, ...newLTM].sort((a, b) => b.lastUpdated - a.lastUpdated);
+            setState(prev => ({ ...prev, memoryEntries: merged }));
+            await saveMemoryEntries(merged);
+            console.log(`[PRIME-MEMORY] Merged ${newLTM.length} long-term memory items from backend`);
+            hasUpdates = true;
+          }
+        }
       }
 
-      console.log('[PRIME-MEMORY] Backend load complete');
+      if (backendThreads.length > 0 && backendThreads.length > localChat.length) {
+        console.log(`[PRIME-MEMORY] Backend has ${backendThreads.length} thread records`);
+      }
+
+      console.log('[PRIME-MEMORY] Backend load complete. Had updates:', hasUpdates);
     } catch (error) {
       console.log('[PRIME-MEMORY] Backend load skipped (not available):', (error as Error)?.message || 'unknown');
     }
@@ -364,6 +402,40 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     console.log(`[MEMORY-COMPRESS] Compressed ${compressed.length} entries into summary. Kept ${kept.length} entries.`);
   }, []);
 
+  const scheduleDebouncedMemorySync = useCallback(() => {
+    pendingMemorySyncRef.current = true;
+    if (memorySyncTimerRef.current) {
+      clearTimeout(memorySyncTimerRef.current);
+    }
+    memorySyncTimerRef.current = setTimeout(async () => {
+      if (pendingMemorySyncRef.current) {
+        pendingMemorySyncRef.current = false;
+        const currentState = stateRef.current;
+        console.log('[PRIME-MEMORY] Debounced memory sync to backend triggered');
+        try {
+          await trpcClient.system.syncNow.mutate({
+            mode: 'memory_auto',
+            reason: 'Auto-sync memory from MavisPrimeMemory',
+            include: { memory: true, vault: false, stats: false, skills: false, quests: false, council: false },
+            payload: {
+              memoryEntries: currentState.memoryEntries,
+              chatHistory: currentState.chatHistory,
+              arcIndex: currentState.arcIndex,
+              councilProfiles: currentState.councilProfiles,
+              systemSnapshots: currentState.systemSnapshots,
+            },
+          });
+          const now = Date.now();
+          await Storage.setItem(PRIME_BACKEND_SYNC_KEY, now.toString());
+          setState(prev => ({ ...prev, lastBackendSync: now, backendSyncStatus: 'success' }));
+          console.log('[PRIME-MEMORY] Auto memory sync to backend complete');
+        } catch (error) {
+          console.warn('[PRIME-MEMORY] Auto memory sync failed (non-fatal):', (error as Error)?.message);
+        }
+      }
+    }, MEMORY_SYNC_DEBOUNCE_MS);
+  }, []);
+
   const addMemoryEntry = useCallback(async (entry: Omit<PrimeMemoryEntry, 'id' | 'timestamp' | 'lastUpdated'>) => {
     const newEntry: PrimeMemoryEntry = {
       ...entry,
@@ -380,12 +452,22 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
 
     console.log('[PRIME-MEMORY] Added memory entry:', newEntry.memoryType, '-', newEntry.memoryKey);
     console.log('[PRIME-MEMORY] Total entries:', updated.length, '(compression threshold: ' + COMPRESSION_THRESHOLD + ')');
+
+    trpcClient.memory.upsertMemoryFact.mutate({
+      key: newEntry.memoryKey,
+      value: newEntry.memoryValue,
+      confidence: newEntry.importance / 3,
+      source: newEntry.memoryType,
+      scope: 'prime_memory',
+    }).catch(err => console.warn('[PRIME-MEMORY] Failed to sync new entry to backend:', err));
+
+    scheduleDebouncedMemorySync();
     
     if (updated.length >= COMPRESSION_THRESHOLD) {
       console.log('[PRIME-MEMORY] Compression threshold reached. Call compressMemory() manually if needed.');
     }
     return newEntry;
-  }, [compressMemory]);
+  }, [compressMemory, scheduleDebouncedMemorySync]);
 
   const updateMemoryEntry = useCallback(async (id: string, updates: Partial<PrimeMemoryEntry>) => {
     let updated: PrimeMemoryEntry[] = [];
@@ -397,7 +479,8 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     });
     await saveMemoryEntries(updated);
     console.log('[PRIME-MEMORY] Updated memory entry:', id);
-  }, []);
+    scheduleDebouncedMemorySync();
+  }, [scheduleDebouncedMemorySync]);
 
   const addChatMessage = useCallback(async (message: Omit<ChatMessage, 'id' | 'timestamp'>) => {
     const newMessage: ChatMessage = {
@@ -412,8 +495,9 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     });
     await saveChatHistory(updated);
     console.log('[PRIME-MEMORY] Added chat message');
+    scheduleDebouncedMemorySync();
     return newMessage;
-  }, []);
+  }, [scheduleDebouncedMemorySync]);
 
   const updateArc = useCallback(async (arcName: string, updates: Partial<ArcIndex>) => {
     let updated: ArcIndex[] = [];
@@ -438,7 +522,8 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     });
     await saveArcIndex(updated);
     console.log('[PRIME-MEMORY] Updated arc:', arcName);
-  }, []);
+    scheduleDebouncedMemorySync();
+  }, [scheduleDebouncedMemorySync]);
 
   const updateCouncilProfile = useCallback(async (councilId: string, updates: Partial<CouncilProfile>) => {
     let updated: CouncilProfile[] = [];
@@ -467,7 +552,8 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     });
     await saveCouncilProfiles(updated);
     console.log('[PRIME-MEMORY] Updated council profile:', councilId);
-  }, []);
+    scheduleDebouncedMemorySync();
+  }, [scheduleDebouncedMemorySync]);
 
   const createSystemSnapshot = useCallback(async (snapshot: Omit<SystemSnapshot, 'id' | 'timestamp'>) => {
     const newSnapshot: SystemSnapshot = {
@@ -626,15 +712,23 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
 
       console.log('[BACKEND-SYNC] Backend sync complete:', result);
 
-      for (const entry of currentState.memoryEntries.filter(e => e.importance >= 2).slice(0, 20)) {
-        trpcClient.memory.upsertMemoryFact.mutate({
-          key: entry.memoryKey,
-          value: entry.memoryValue,
-          confidence: entry.importance / 3,
-          source: entry.memoryType,
-          scope: 'prime_memory',
-        }).catch(err => console.warn('[BACKEND-SYNC] Failed to sync memory fact:', err));
+      const allMemoryEntries = currentState.memoryEntries;
+      console.log(`[BACKEND-SYNC] Syncing ALL ${allMemoryEntries.length} memory entries as individual facts...`);
+      const batchSize = 50;
+      for (let i = 0; i < allMemoryEntries.length; i += batchSize) {
+        const batch = allMemoryEntries.slice(i, i + batchSize);
+        const promises = batch.map(entry =>
+          trpcClient.memory.upsertMemoryFact.mutate({
+            key: entry.memoryKey,
+            value: entry.memoryValue,
+            confidence: entry.importance / 3,
+            source: entry.memoryType,
+            scope: 'prime_memory',
+          }).catch(err => console.warn('[BACKEND-SYNC] Failed to sync memory fact:', entry.memoryKey, err))
+        );
+        await Promise.all(promises);
       }
+      console.log(`[BACKEND-SYNC] All ${allMemoryEntries.length} memory facts synced to backend`);
 
       return result;
     } catch (error) {
@@ -643,6 +737,23 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       return null;
     }
   }, []);
+
+  useEffect(() => {
+    if (!state.isLoaded) return;
+    autoSyncIntervalRef.current = setInterval(() => {
+      const currentState = stateRef.current;
+      if (currentState.memoryEntries.length > 0 || currentState.chatHistory.length > 0) {
+        console.log('[PRIME-MEMORY] Periodic auto-sync triggered');
+        scheduleDebouncedMemorySync();
+      }
+    }, AUTO_SYNC_INTERVAL_MS);
+
+    return () => {
+      if (autoSyncIntervalRef.current) {
+        clearInterval(autoSyncIntervalRef.current);
+      }
+    };
+  }, [state.isLoaded, scheduleDebouncedMemorySync]);
 
   const omniSync = useCallback(async (
     gameStateSnapshot: Omit<SystemSnapshot, 'id' | 'timestamp'>,

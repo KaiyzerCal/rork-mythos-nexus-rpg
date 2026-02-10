@@ -1,6 +1,7 @@
 import createContextHook from '@nkzw/create-context-hook';
 import Storage from '@/utils/storage';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { trpcClient } from '@/lib/trpc';
 import type {
   EnergyLevel,
   GameState,
@@ -95,6 +96,9 @@ const getRankForLevel = (level: number): 'F' | 'E' | 'D' | 'C' | 'B' | 'A' | 'S'
   if (level >= 20) return 'E';
   return 'F';
 };
+
+const BACKEND_SYNC_DEBOUNCE_MS = 15000;
+const BACKEND_SYNC_KEY = 'game_state_last_backend_sync';
 
 export const [GameProvider, useGame] = createContextHook(() => {
   const [gameState, setGameState] = useState<GameState>({
@@ -203,13 +207,163 @@ export const [GameProvider, useGame] = createContextHook(() => {
   });
 
   const [isLoading, setIsLoading] = useState(true);
+  const [lastBackendSync, setLastBackendSync] = useState<number | null>(null);
+  const [backendSyncStatus, setBackendSyncStatus] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const councilMembers = gameState.councils;
   const skillSubTrees = gameState.skillSubTrees || SKILL_SUB_TREES;
+  const backendSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSyncRef = useRef(false);
+  const gameStateRef = useRef(gameState);
+  gameStateRef.current = gameState;
+
+  const mergeGameState = (parsed: any): GameState => {
+    const existingEnergyTypes = new Set(parsed.energySystems?.map((e: EnergyLevel) => e.type) || []);
+    const missingEnergySystems = initialEnergySystems.filter(
+      (system) => !existingEnergyTypes.has(system.type)
+    );
+    const mergedEnergySystems = [
+      ...(parsed.energySystems || []),
+      ...missingEnergySystems,
+    ];
+    const loadedCouncils = parsed.councils && Array.isArray(parsed.councils) && parsed.councils.length > 0
+      ? parsed.councils
+      : ALL_COUNCIL_MEMBERS;
+
+    return {
+      ...parsed,
+      transformations: parsed.transformations || ALL_FORMS,
+      inventoryV2: parsed.inventoryV2 || INITIAL_INVENTORY_V2,
+      roster: parsed.roster || INITIAL_ROSTER,
+      energySystems: mergedEnergySystems,
+      skillTrees: parsed.skillTrees || SKILL_TREES,
+      skillSubTrees: parsed.skillSubTrees || SKILL_SUB_TREES,
+      skillProficiency: parsed.skillProficiency || {},
+      tasks: parsed.tasks || [],
+      councils: loadedCouncils,
+      arcStory: parsed.arcStory || 'Forge of Equilibrium (Phase III Evolution)',
+      allies: parsed.allies || [],
+      dailyRituals: parsed.dailyRituals || [],
+      vaultEntries: parsed.vaultEntries || [],
+      journalEntries: parsed.journalEntries || [],
+      bpmSessions: parsed.bpmSessions || [],
+      currencies: parsed.currencies || [
+        { name: 'Codex Points', amount: 5000, icon: '◈' },
+        { name: 'Black Sun Essence', amount: 850, icon: '☀' },
+      ],
+      inventory: parsed.inventory || [],
+    };
+  };
+
+  const syncGameStateToBackend = useCallback(async (stateToSync: GameState) => {
+    try {
+      console.log('[GAME_CONTEXT] Syncing game state to backend...');
+      setBackendSyncStatus('syncing');
+      const result = await trpcClient.system.syncNow.mutate({
+        mode: 'game_state_auto',
+        reason: 'Auto-sync from GameContext save',
+        include: {
+          memory: true,
+          vault: true,
+          stats: true,
+          skills: true,
+          quests: true,
+          council: true,
+        },
+        payload: {
+          gameState: stateToSync,
+        },
+      });
+      const now = Date.now();
+      setLastBackendSync(now);
+      setBackendSyncStatus('success');
+      await Storage.setItem(BACKEND_SYNC_KEY, now.toString());
+      console.log('[GAME_CONTEXT] Backend sync complete:', result.sync_id);
+    } catch (error) {
+      console.error('[GAME_CONTEXT] Backend sync failed:', error);
+      setBackendSyncStatus('error');
+    }
+  }, []);
+
+  const scheduleDebouncedBackendSync = useCallback(() => {
+    pendingSyncRef.current = true;
+    if (backendSyncTimerRef.current) {
+      clearTimeout(backendSyncTimerRef.current);
+    }
+    backendSyncTimerRef.current = setTimeout(() => {
+      if (pendingSyncRef.current) {
+        pendingSyncRef.current = false;
+        syncGameStateToBackend(gameStateRef.current);
+      }
+    }, BACKEND_SYNC_DEBOUNCE_MS);
+  }, [syncGameStateToBackend]);
+
+  const loadGameStateFromBackend = useCallback(async (): Promise<any | null> => {
+    try {
+      console.log('[GAME_CONTEXT] Attempting to load game state from backend...');
+      const snapshot = await trpcClient.system.getSystemSnapshot.query({
+        include: {
+          tabs: true,
+          stats: true,
+          skills: true,
+          quests: true,
+          forms: true,
+          vault: true,
+          council: true,
+          recent_threads: false,
+          memory: false,
+        },
+      });
+
+      if (!snapshot) {
+        console.log('[GAME_CONTEXT] No backend snapshot available');
+        return null;
+      }
+
+      const gameStateData = (snapshot as any);
+      if (gameStateData.stats && gameStateData.stats.level && gameStateData.stats.level > 1) {
+        console.log('[GAME_CONTEXT] Found valid game state on backend, level:', gameStateData.stats.level);
+        const backendState: any = {};
+        if (gameStateData.stats) backendState.stats = gameStateData.stats;
+        if (gameStateData.identity) backendState.identity = gameStateData.identity;
+        if (gameStateData.energySystems) backendState.energySystems = gameStateData.energySystems;
+        if (gameStateData.currencies) backendState.currencies = gameStateData.currencies;
+        if (gameStateData.inventoryV2) backendState.inventoryV2 = gameStateData.inventoryV2;
+        if (gameStateData.roster) backendState.roster = gameStateData.roster;
+        if (gameStateData.allies) backendState.allies = gameStateData.allies;
+        if (gameStateData.dailyRituals) backendState.dailyRituals = gameStateData.dailyRituals;
+        if (gameStateData.currentFloor) backendState.currentFloor = gameStateData.currentFloor;
+        if (gameStateData.gpr !== undefined) backendState.gpr = gameStateData.gpr;
+        if (gameStateData.pvpRating !== undefined) backendState.pvpRating = gameStateData.pvpRating;
+        if (gameStateData.arcStory) backendState.arcStory = gameStateData.arcStory;
+        if (gameStateData.realWorldModules) backendState.realWorldModules = gameStateData.realWorldModules;
+        if (gameStateData.skills) backendState.skillTrees = gameStateData.skills;
+        if (gameStateData.skillSubTrees) backendState.skillSubTrees = gameStateData.skillSubTrees;
+        if (gameStateData.skillProficiency) backendState.skillProficiency = gameStateData.skillProficiency;
+        if (gameStateData.quests) backendState.quests = gameStateData.quests;
+        if (gameStateData.tasks) backendState.tasks = gameStateData.tasks;
+        if (gameStateData.forms) {
+          if (gameStateData.forms.currentForm) backendState.currentForm = gameStateData.forms.currentForm;
+          if (gameStateData.forms.currentBPM) backendState.currentBPM = gameStateData.forms.currentBPM;
+          if (gameStateData.forms.transformations) backendState.transformations = gameStateData.forms.transformations;
+        }
+        if (gameStateData.vault_recent) backendState.vaultEntries = gameStateData.vault_recent;
+        if (gameStateData.journalEntries) backendState.journalEntries = gameStateData.journalEntries;
+        if (gameStateData.council) backendState.councils = gameStateData.council;
+        return backendState;
+      }
+      return null;
+    } catch (error) {
+      console.log('[GAME_CONTEXT] Backend load failed (non-fatal):', (error as Error)?.message);
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     const loadGameState = async () => {
       try {
         const stored = await Storage.getItem(STORAGE_KEY);
+        let localState: GameState | null = null;
+
         if (stored) {
           let parsed;
           try {
@@ -221,37 +375,34 @@ export const [GameProvider, useGame] = createContextHook(() => {
             setIsLoading(false);
             return;
           }
-          
-          const existingEnergyTypes = new Set(parsed.energySystems?.map((e: EnergyLevel) => e.type) || []);
-          const missingEnergySystems = initialEnergySystems.filter(
-            (system) => !existingEnergyTypes.has(system.type)
-          );
-          
-          const mergedEnergySystems = [
-            ...(parsed.energySystems || []),
-            ...missingEnergySystems,
-          ];
-          
-          const loadedCouncils = parsed.councils && Array.isArray(parsed.councils) && parsed.councils.length > 0 
-            ? parsed.councils 
-            : ALL_COUNCIL_MEMBERS;
-          
-          console.log('[COUNCIL] Loading councils from storage. Count:', loadedCouncils.length);
-          
-          const mergedState = {
-            ...parsed,
-            transformations: parsed.transformations || ALL_FORMS,
-            inventoryV2: parsed.inventoryV2 || INITIAL_INVENTORY_V2,
-            roster: parsed.roster || INITIAL_ROSTER,
-            energySystems: mergedEnergySystems,
-            skillTrees: parsed.skillTrees || SKILL_TREES,
-            skillSubTrees: parsed.skillSubTrees || SKILL_SUB_TREES,
-            skillProficiency: parsed.skillProficiency || {},
-            tasks: parsed.tasks || [],
-            councils: loadedCouncils,
-            arcStory: parsed.arcStory || 'Forge of Equilibrium (Phase III Evolution)',
-          };
-          setGameState(mergedState);
+          localState = mergeGameState(parsed);
+          console.log('[GAME_CONTEXT] Local state loaded, level:', localState.stats.level);
+          setGameState(localState);
+        }
+
+        const backendState = await loadGameStateFromBackend();
+        if (backendState) {
+          const backendLevel = backendState.stats?.level || 0;
+          const localLevel = localState?.stats?.level || 0;
+
+          if (backendLevel > localLevel || (!localState && backendLevel > 0)) {
+            console.log(`[GAME_CONTEXT] Backend state is newer (backend level ${backendLevel} > local level ${localLevel}), using backend`);
+            const merged = mergeGameState({ ...(localState || {}), ...backendState });
+            setGameState(merged);
+            await Storage.setItem(STORAGE_KEY, JSON.stringify(merged));
+            console.log('[GAME_CONTEXT] Merged backend state into local');
+          } else if (localState && localLevel > backendLevel) {
+            console.log(`[GAME_CONTEXT] Local state is newer (local level ${localLevel} > backend level ${backendLevel}), syncing to backend`);
+            scheduleDebouncedBackendSync();
+          }
+        } else if (localState) {
+          console.log('[GAME_CONTEXT] No backend state found, scheduling sync of local state');
+          scheduleDebouncedBackendSync();
+        }
+
+        const storedSyncTime = await Storage.getItem(BACKEND_SYNC_KEY);
+        if (storedSyncTime) {
+          setLastBackendSync(parseInt(storedSyncTime, 10));
         }
       } catch (error) {
         console.error('Failed to load game state:', error);
@@ -268,11 +419,12 @@ export const [GameProvider, useGame] = createContextHook(() => {
     setGameState(newState);
     try {
       await Storage.setItem(STORAGE_KEY, JSON.stringify(newState));
-      console.log('Game state saved successfully');
+      console.log('[GAME_CONTEXT] Game state saved locally');
+      scheduleDebouncedBackendSync();
     } catch (error) {
-      console.error('Failed to save game state:', error);
+      console.error('[GAME_CONTEXT] Failed to save game state:', error);
     }
-  }, []);
+  }, [scheduleDebouncedBackendSync]);
 
   const addXP = useCallback((amount: number) => {
     setGameState((prev) => {
@@ -1002,9 +1154,16 @@ export const [GameProvider, useGame] = createContextHook(() => {
     });
   }, [saveGameState, addXP]);
 
+  const forceBackendSync = useCallback(async () => {
+    console.log('[GAME_CONTEXT] Force backend sync requested');
+    await syncGameStateToBackend(gameStateRef.current);
+  }, [syncGameStateToBackend]);
+
   return {
     gameState,
     isLoading,
+    lastBackendSync,
+    backendSyncStatus,
     councilMembers,
     skillSubTrees,
     unlockSkill,
@@ -1059,5 +1218,6 @@ export const [GameProvider, useGame] = createContextHook(() => {
     completeTask,
     saveStoreItems,
     addJournalEntry,
+    forceBackendSync,
   };
 });
