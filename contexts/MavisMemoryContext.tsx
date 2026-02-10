@@ -35,8 +35,6 @@ interface MavisMemoryState {
 
 const MAVIS_MEMORY_KEY = 'mavis_prime_memory_v2';
 const MAVIS_CONVERSATIONS_KEY = 'mavis_conversation_threads_v1';
-const MAX_MEMORY_ITEMS = 150;
-const MAX_CONVERSATION_THREADS = 50;
 
 export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
   const [state, setState] = useState<MavisMemoryState>({
@@ -101,11 +99,10 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
             return b.importanceScore - a.importanceScore;
           }
           return b.updatedAt - a.updatedAt;
-        })
-        .slice(0, MAX_MEMORY_ITEMS);
+        });
       
       await Storage.setItem(MAVIS_MEMORY_KEY, JSON.stringify(sortedItems));
-      console.log('[MAVIS-MEMORY] Saved', sortedItems.length, 'memory items');
+      console.log('[MAVIS-MEMORY] Saved', sortedItems.length, 'memory items (no cap)');
     } catch (error) {
       console.error('[MAVIS-MEMORY] Failed to save memory:', error);
     }
@@ -114,11 +111,10 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
   const saveConversationThreads = async (threads: ConversationThread[]) => {
     try {
       const sortedThreads = threads
-        .sort((a, b) => b.lastMessageAt - a.lastMessageAt)
-        .slice(0, MAX_CONVERSATION_THREADS);
+        .sort((a, b) => b.lastMessageAt - a.lastMessageAt);
       
       await Storage.setItem(MAVIS_CONVERSATIONS_KEY, JSON.stringify(sortedThreads));
-      console.log('[MAVIS-MEMORY] Saved', sortedThreads.length, 'conversation threads');
+      console.log('[MAVIS-MEMORY] Saved', sortedThreads.length, 'conversation threads (no cap)');
     } catch (error) {
       console.error('[MAVIS-MEMORY] Failed to save conversation threads:', error);
     }

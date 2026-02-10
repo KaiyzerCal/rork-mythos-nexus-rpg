@@ -92,13 +92,8 @@ const PRIME_SNAPSHOTS_KEY = 'mavis_prime_system_snapshots_v7_5';
 const PRIME_COMPRESSED_KEY = 'mavis_prime_compressed_summaries_v1';
 const PRIME_BACKEND_SYNC_KEY = 'mavis_prime_last_backend_sync';
 
-const MAX_MEMORY_ENTRIES = 1000;
-const MAX_CHAT_HISTORY = 500;
-const MAX_ARC_INDEX = 50;
-const MAX_COUNCIL_PROFILES = 100;
-const MAX_SNAPSHOTS = 100;
-const COMPRESSION_THRESHOLD = 200;
-const COMPRESSION_TARGET = 150;
+const COMPRESSION_THRESHOLD = 5000;
+const COMPRESSION_TARGET = 3000;
 
 export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook(() => {
   const [state, setState] = useState<MavisPrimeMemoryState>({
@@ -220,10 +215,10 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         const localIds = new Set(localMemory.map(m => m.id));
         const newEntries = backendMemory.filter((m: any) => !localIds.has(m.id));
         if (newEntries.length > 0) {
-          const merged = [...localMemory, ...newEntries].sort((a, b) => b.lastUpdated - a.lastUpdated).slice(0, MAX_MEMORY_ENTRIES);
+          const merged = [...localMemory, ...newEntries].sort((a, b) => b.lastUpdated - a.lastUpdated);
           setState(prev => ({ ...prev, memoryEntries: merged }));
           await saveMemoryEntries(merged);
-          console.log(`[PRIME-MEMORY] Merged ${newEntries.length} new entries from backend`);
+          console.log(`[PRIME-MEMORY] Merged ${newEntries.length} new entries from backend (no cap)`);
         }
       }
 
@@ -243,10 +238,9 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         .sort((a, b) => {
           if (a.importance !== b.importance) return b.importance - a.importance;
           return b.lastUpdated - a.lastUpdated;
-        })
-        .slice(0, MAX_MEMORY_ENTRIES);
+        });
       await Storage.setItem(PRIME_MEMORY_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'memory entries locally');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'memory entries locally (unlimited)');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save memory entries:', error);
     }
@@ -255,10 +249,9 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
   const saveChatHistory = async (chat: ChatMessage[]) => {
     try {
       const sorted = chat
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, MAX_CHAT_HISTORY);
+        .sort((a, b) => b.timestamp - a.timestamp);
       await Storage.setItem(PRIME_CHAT_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'chat messages locally');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'chat messages locally (unlimited)');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save chat history:', error);
     }
@@ -267,10 +260,9 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
   const saveArcIndex = async (arcs: ArcIndex[]) => {
     try {
       const sorted = arcs
-        .sort((a, b) => b.lastEvent - a.lastEvent)
-        .slice(0, MAX_ARC_INDEX);
+        .sort((a, b) => b.lastEvent - a.lastEvent);
       await Storage.setItem(PRIME_ARCS_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'arc indexes locally');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'arc indexes locally (unlimited)');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save arc index:', error);
     }
@@ -278,9 +270,8 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
 
   const saveCouncilProfiles = async (profiles: CouncilProfile[]) => {
     try {
-      const sorted = profiles.slice(0, MAX_COUNCIL_PROFILES);
-      await Storage.setItem(PRIME_COUNCIL_PROFILES_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'council profiles locally');
+      await Storage.setItem(PRIME_COUNCIL_PROFILES_KEY, JSON.stringify(profiles));
+      console.log('[PRIME-MEMORY] Saved', profiles.length, 'council profiles locally (unlimited)');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save council profiles:', error);
     }
@@ -289,10 +280,9 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
   const saveSystemSnapshots = async (snapshots: SystemSnapshot[]) => {
     try {
       const sorted = snapshots
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, MAX_SNAPSHOTS);
+        .sort((a, b) => b.timestamp - a.timestamp);
       await Storage.setItem(PRIME_SNAPSHOTS_KEY, JSON.stringify(sorted));
-      console.log('[PRIME-MEMORY] Saved', sorted.length, 'system snapshots locally');
+      console.log('[PRIME-MEMORY] Saved', sorted.length, 'system snapshots locally (unlimited)');
     } catch (error) {
       console.error('[PRIME-MEMORY] Failed to save system snapshots:', error);
     }
@@ -358,7 +348,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     const activeArcNames = [...new Set(compressed.filter(e => e.arc).map(e => e.arc!))];
     summary.activeArcs = activeArcNames;
 
-    const updatedSummaries = [summary, ...stateRef.current.compressedSummaries].slice(0, 50);
+    const updatedSummaries = [summary, ...stateRef.current.compressedSummaries];
 
     setState(prev => ({
       ...prev,
@@ -388,11 +378,12 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     });
     await saveMemoryEntries(updated);
 
-    if (updated.length >= COMPRESSION_THRESHOLD) {
-      setTimeout(() => compressMemory(), 500);
-    }
-
     console.log('[PRIME-MEMORY] Added memory entry:', newEntry.memoryType, '-', newEntry.memoryKey);
+    console.log('[PRIME-MEMORY] Total entries:', updated.length, '(compression threshold: ' + COMPRESSION_THRESHOLD + ')');
+    
+    if (updated.length >= COMPRESSION_THRESHOLD) {
+      console.log('[PRIME-MEMORY] Compression threshold reached. Call compressMemory() manually if needed.');
+    }
     return newEntry;
   }, [compressMemory]);
 
@@ -693,7 +684,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     }
 
     if (currentState.memoryEntries.length >= COMPRESSION_THRESHOLD) {
-      await compressMemory();
+      console.log('[OMNI-SYNC] Memory entries exceed compression threshold. Consider calling compressMemory() if needed.');
     }
 
     console.log('[OMNI-SYNC] Complete. All systems synchronized.');
@@ -726,5 +717,7 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     syncToBackend,
     compressMemory,
     reloadMemory: loadAllMemory,
+    compressionThreshold: COMPRESSION_THRESHOLD,
+    compressionTarget: COMPRESSION_TARGET,
   };
 });
