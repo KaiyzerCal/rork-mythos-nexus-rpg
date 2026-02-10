@@ -1,7 +1,7 @@
 import * as Clipboard from 'expo-clipboard';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Cpu, Send, Sparkles, Brain, MessageSquare, Heart, Target, Flame, X, Crown, Zap, Users, Activity, ArrowDown, StopCircle, Copy, Check } from 'lucide-react-native';
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useGame } from '@/contexts/GameContext';
 import { useMavisMemory } from '@/contexts/MavisMemoryContext';
 import { useMavisPrimeMemory } from '@/contexts/MavisPrimePersistentMemory';
@@ -76,6 +76,8 @@ export default function MavisScreen() {
   const [isNearBottom, setIsNearBottom] = useState(true);
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const [manualStopped, setManualStopped] = useState(false);
 
   const buildFullSystemContext = () => {
     const { 
@@ -239,7 +241,7 @@ RELATIONSHIPS MODULE:
   };
 
   const { messages, sendMessage, setMessages, error, status, stop } = useRorkAgent({ tools: {} });
-  const isStreaming = status === 'streaming';
+  const isStreaming = (status === 'streaming' || status === 'submitted') && !manualStopped;
 
   useEffect(() => {
     if (error) {
@@ -363,11 +365,35 @@ RELATIONSHIPS MODULE:
     }
   };
 
+  const handleStop = useCallback(() => {
+    console.log('[MAVIS-PRIME] Stop requested');
+    setManualStopped(true);
+    try {
+      if (typeof stop === 'function') {
+        stop();
+        console.log('[MAVIS-PRIME] SDK stop() called');
+      }
+    } catch (e) {
+      console.log('[MAVIS-PRIME] SDK stop error (non-critical):', e);
+    }
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+      console.log('[MAVIS-PRIME] AbortController aborted');
+    }
+  }, [stop]);
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
     const userInput = input.trim();
     setInput('');
+    setManualStopped(false);
+
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    abortControllerRef.current = new AbortController();
 
     try {
       console.log('[MAVIS-PRIME] Sending message:', userInput);
@@ -408,9 +434,15 @@ RELATIONSHIPS MODULE:
       console.log('[MAVIS-PRIME] Full message prepared, calling sendMessage...');
       const result = await sendMessage({ text: fullMessage });
       console.log('[MAVIS-PRIME] Message sent successfully, result:', result);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError' || manualStopped) {
+        console.log('[MAVIS-PRIME] Message generation stopped by user');
+        return;
+      }
       console.error('[MAVIS-PRIME] ERROR sending message:', err);
       console.error('[MAVIS-PRIME] Error details:', JSON.stringify(err, null, 2));
+    } finally {
+      abortControllerRef.current = null;
     }
   };
 
@@ -1013,7 +1045,7 @@ RELATIONSHIPS MODULE:
           {isStreaming ? (
             <TouchableOpacity
               style={[styles.stopButton, enryuMode && { backgroundColor: 'rgba(220, 20, 60, 0.4)', borderColor: '#DC143C' }]}
-              onPress={() => stop()}
+              onPress={handleStop}
               activeOpacity={0.7}
             >
               <StopCircle size={20} color={enryuMode ? '#DC143C' : '#FF6B35'} />
