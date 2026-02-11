@@ -689,9 +689,17 @@ RELATIONSHIPS MODULE:
               return false;
             });
           })
-          .map((msg, idx) => {
-            const baseKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}-${msg.role}`;
-            const uniqueKey = `${baseKey}-${idx}`;
+          .reduce<Array<{ msg: typeof messages[0]; uniqueKey: string }>>((acc, msg, idx) => {
+            const baseKey = msg.id && msg.id.trim() ? msg.id : `msg-fallback-${idx}-${msg.role}`;
+            let uniqueKey = baseKey;
+            const existingKeys = new Set(acc.map(a => a.uniqueKey));
+            if (existingKeys.has(uniqueKey)) {
+              uniqueKey = `${baseKey}-dup-${idx}`;
+            }
+            acc.push({ msg, uniqueKey });
+            return acc;
+          }, [])
+          .map(({ msg, uniqueKey }) => {
             return (
             <TouchableOpacity
               key={uniqueKey}
@@ -754,8 +762,7 @@ RELATIONSHIPS MODULE:
                       if (!textPart.text || !textPart.text.trim()) {
                         return null;
                       }
-                      const basePartKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}`;
-                      const partKey = `${basePartKey}-part-${partIdx}`;
+                      const partKey = `${uniqueKey}-part-${partIdx}`;
                       return (
                         <Text key={partKey} style={styles.messageContent}>
                           {textPart.text}
@@ -765,8 +772,7 @@ RELATIONSHIPS MODULE:
                     if (part.type === 'tool') {
                       const toolPart = part as any;
                       if (toolPart.state === 'input-streaming' || toolPart.state === 'input-available') {
-                        const basePartKey = msg.id && msg.id.trim() ? msg.id : `msg-${idx}`;
-                        const partKey = `${basePartKey}-tool-${partIdx}`;
+                        const partKey = `${uniqueKey}-tool-${partIdx}`;
                         return (
                           <Text key={partKey} style={[styles.messageContent, { fontStyle: 'italic', opacity: 0.7 }]}>
                             Thinking...
