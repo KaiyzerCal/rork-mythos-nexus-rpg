@@ -9,6 +9,9 @@ import { MavisPrimeMemoryProvider } from "@/contexts/MavisPrimePersistentMemory"
 import { trpc, trpcClient } from "@/lib/trpc.client";
 import { initDb } from "../src/db/schema";
 
+// ✅ ADD THIS IMPORT
+import * as Updates from "expo-updates";
+
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
@@ -26,14 +29,29 @@ export default function RootLayout() {
     (async () => {
       try {
         initDb();
+
+        // ✅ STEP 3: Apply OTA update automatically in RELEASE builds
+        try {
+          if (!__DEV__) {
+            const update = await Updates.checkForUpdateAsync();
+            if (update.isAvailable) {
+              await Updates.fetchUpdateAsync();
+              await Updates.reloadAsync();
+              return; // reloadAsync restarts JS; stop continuing initialization
+            }
+          }
+        } catch (e) {
+          console.warn("[UPDATES] check/fetch/reload failed:", e);
+        }
+
         // One-time migration: AsyncStorage -> SQLite json_store
         try {
           const r = await migrateAsyncStorageToSqliteOnce({ wipeAsyncStorage: false });
-          console.log('[MIGRATION] AsyncStorage -> SQLite:', r);
+          console.log("[MIGRATION] AsyncStorage -> SQLite:", r);
         } catch (e) {
-          console.warn('[MIGRATION] failed:', e);
+          console.warn("[MIGRATION] failed:", e);
         }
-} catch (e) {
+      } catch (e) {
         console.warn("initDb failed:", e);
       } finally {
         await SplashScreen.hideAsync();
@@ -57,7 +75,3 @@ export default function RootLayout() {
     </trpc.Provider>
   );
 }
-
-
-
-

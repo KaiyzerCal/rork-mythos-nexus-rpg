@@ -1,4 +1,4 @@
-{
+﻿{
   "expo": {
     "name": "Mythos Nexus RPG",
     "slug": "mythos-nexus-rpg",
@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "rork-app",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
@@ -43,10 +43,11 @@
       "expo-sqlite"
     ],
     "updates": {
-      "enabled": true,
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/5efca233-e8dc-424b-8bc0-acf1b9c04737"
-    },
+  "enabled": true,
+  "fallbackToCacheTimeout": 30000,
+  "url": "https://u.expo.dev/5efca233-e8dc-424b-8bc0-acf1b9c04737"
+}
+,
     "experiments": {
       "typedRoutes": true
     },
@@ -60,3 +61,4 @@
     }
   }
 }
+

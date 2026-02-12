@@ -5,6 +5,8 @@ import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { Quest, QuestType, QuestStatus, Task, TaskType, TaskRecurrence } from '@/types/rpg';
 
+import { copyToClipboard, getClipboardText } from "../src/utils/clipboard";
+
 export default function QuestsScreen() {
   const { gameState, addQuest, updateQuestProgress, completeQuest, deleteQuest, updateQuest, addTask, updateTask, completeTask, deleteTask } = useGame();
   const [activeTab, setActiveTab] = useState<'quests' | 'tasks'>('quests');
@@ -130,7 +132,7 @@ export default function QuestsScreen() {
       subTree.forEach(sub => {
         subSkills.push({
           id: sub.id,
-          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} → ${sub.name}`,
+          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} â†’ ${sub.name}`,
           isParent: false,
           parentId,
         });
@@ -244,7 +246,7 @@ export default function QuestsScreen() {
       const parentSkill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
       const subSkill = gameState.skillSubTrees?.[task.linkedSkillId]?.find(s => s.id === task.linkedSubSkillId);
       if (parentSkill && subSkill) {
-        return `${parentSkill.name} → ${subSkill.name}`;
+        return `${parentSkill.name} â†’ ${subSkill.name}`;
       }
     } else {
       const skill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
