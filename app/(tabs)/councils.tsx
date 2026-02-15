@@ -18,6 +18,7 @@ export default function CouncilsScreen() {
   const [selectedClass, setSelectedClass] = useState<string>('all');
   const [activeConversation, setActiveConversation] = useState<typeof councilMembers[0] | null>(null);
   const [input, setInput] = useState('');
+  const [userInputMap, setUserInputMap] = useState<Record<string, string>>({});
   const scrollViewRef = useRef<ScrollView>(null);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingMember, setEditingMember] = useState<typeof councilMembers[0] | null>(null);
@@ -255,7 +256,19 @@ Does this conversation meaningfully contribute to character growth?`,
     const systemPrompt = getMemberContext(activeConversation);
     const fullMessage = `${systemPrompt}\n\nUser: ${userInput}`;
     
+    const tempId = `user-${Date.now()}`;
+    setUserInputMap((prev) => ({ ...prev, [tempId]: userInput }));
+    
     await sendMessage({ text: fullMessage });
+    
+    setUserInputMap((prev) => {
+      const updated = { ...prev };
+      const lastUserMsg = messages.filter((m) => m.role === 'user').pop();
+      if (lastUserMsg?.id) {
+        updated[lastUserMsg.id] = userInput;
+      }
+      return updated;
+    });
 
     // Analyze conversation for growth after council member responds
     setTimeout(async () => {
@@ -438,13 +451,26 @@ Does this conversation meaningfully contribute to character growth?`,
                       if (!textPart.text || !textPart.text.trim()) {
                         return null;
                       }
+                      let displayText = textPart.text;
+                      if (msg.role === 'user') {
+                        const mapped = userInputMap[msg.id];
+                        if (mapped) {
+                          displayText = mapped;
+                        } else {
+                          const userMarker = '\n\nUser: ';
+                          const markerIdx = displayText.indexOf(userMarker);
+                          if (markerIdx !== -1) {
+                            displayText = displayText.substring(markerIdx + userMarker.length);
+                          }
+                        }
+                      }
                       return (
                         <View key={`${messageKey}-text-${partIdx}`}>
                           <Text style={[
                             styles.messageText,
                             msg.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
                           ]}>
-                            {textPart.text}
+                            {displayText}
                           </Text>
                         </View>
                       );
@@ -487,7 +513,6 @@ Does this conversation meaningfully contribute to character growth?`,
             placeholder={`Ask ${activeConversation.name} for guidance...`}
             placeholderTextColor="#666"
             multiline
-            maxLength={500}
           />
           {isLoading ? (
             <TouchableOpacity
@@ -957,7 +982,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    maxHeight: 100,
+    maxHeight: 160,
     borderWidth: 1,
     borderColor: '#333',
   },

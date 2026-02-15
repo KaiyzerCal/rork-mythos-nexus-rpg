@@ -701,7 +701,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
     });
   }, [saveGameState]);
 
-  const addVaultEntry = useCallback((title: string, content: string, category: VaultEntry['category'], importance: VaultEntry['importance']) => {
+  const addVaultEntry = useCallback((title: string, content: string, category: VaultEntry['category'], importance: VaultEntry['importance'], attachments?: string[]) => {
     setGameState((prev) => {
       const entry: VaultEntry = {
         id: Date.now().toString(),
@@ -710,6 +710,7 @@ export const [GameProvider, useGame] = createContextHook(() => {
         content,
         category,
         importance,
+        attachments: attachments || undefined,
       };
       const newState = { ...prev, vaultEntries: [entry, ...prev.vaultEntries] };
       saveGameState(newState);

@@ -1,11 +1,20 @@
 import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Shield, Plus, Lock, Calendar, AlertCircle, Edit2, Trash2 } from 'lucide-react-native';
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, Modal } from 'react-native';
+import { Shield, Plus, Lock, Calendar, AlertCircle, Edit2, Trash2, Image as ImageIcon, FileText, Upload, X } from 'lucide-react-native';
+import React, { useState, useCallback } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Alert, Modal, Image, Platform } from 'react-native';
 import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import type { VaultEntry } from '@/types/rpg';
+
+interface AttachmentPreview {
+  uri: string;
+  name: string;
+  type: 'image' | 'file';
+  mimeType?: string;
+}
 
 export default function VaultCodexScreen() {
   const { gameState, addVaultEntry, updateVaultEntry, deleteVaultEntry } = useGame();
@@ -14,6 +23,7 @@ export default function VaultCodexScreen() {
   const [editingEntry, setEditingEntry] = useState<VaultEntry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewingEntry, setViewingEntry] = useState<VaultEntry | null>(null);
+  const [attachments, setAttachments] = useState<AttachmentPreview[]>([]);
   const [newEntry, setNewEntry] = useState<{
     title: string;
     content: string;
@@ -42,11 +52,100 @@ export default function VaultCodexScreen() {
     { value: 'critical', label: 'CRITICAL' },
   ];
 
+  const pickImage = useCallback(async () => {
+    try {
+      console.log('[VAULT] Launching image picker...');
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsMultipleSelection: true,
+        quality: 0.8,
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets) {
+        const newAttachments: AttachmentPreview[] = result.assets.map((asset) => ({
+          uri: asset.uri,
+          name: asset.fileName || `image_${Date.now()}`,
+          type: 'image' as const,
+          mimeType: asset.mimeType || 'image/jpeg',
+        }));
+        setAttachments((prev) => [...prev, ...newAttachments]);
+        console.log(`[VAULT] Added ${newAttachments.length} images`);
+      }
+    } catch (error) {
+      console.error('[VAULT] Image picker error:', error);
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    }
+  }, []);
+
+  const pickDocument = useCallback(async () => {
+    try {
+      console.log('[VAULT] Launching document picker...');
+      const result = await DocumentPicker.getDocumentAsync({
+        multiple: true,
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets) {
+        const newAttachments: AttachmentPreview[] = result.assets.map((asset) => ({
+          uri: asset.uri,
+          name: asset.name || `file_${Date.now()}`,
+          type: 'file' as const,
+          mimeType: asset.mimeType || 'application/octet-stream',
+        }));
+        setAttachments((prev) => [...prev, ...newAttachments]);
+        console.log(`[VAULT] Added ${newAttachments.length} files`);
+      }
+    } catch (error) {
+      console.error('[VAULT] Document picker error:', error);
+      Alert.alert('Error', 'Failed to pick file. Please try again.');
+    }
+  }, []);
+
+  const takePhoto = useCallback(async () => {
+    try {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Needed', 'Camera permission is required to take photos.');
+        return;
+      }
+
+      console.log('[VAULT] Launching camera...');
+      const result = await ImagePicker.launchCameraAsync({
+        quality: 0.8,
+        base64: false,
+      });
+
+      if (!result.canceled && result.assets) {
+        const asset = result.assets[0];
+        setAttachments((prev) => [
+          ...prev,
+          {
+            uri: asset.uri,
+            name: asset.fileName || `photo_${Date.now()}`,
+            type: 'image' as const,
+            mimeType: asset.mimeType || 'image/jpeg',
+          },
+        ]);
+        console.log('[VAULT] Added camera photo');
+      }
+    } catch (error) {
+      console.error('[VAULT] Camera error:', error);
+      Alert.alert('Error', 'Failed to take photo. Please try again.');
+    }
+  }, []);
+
+  const removeAttachment = useCallback((index: number) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
   const handleCreateEntry = () => {
     if (!newEntry.title.trim() || !newEntry.content.trim()) {
       Alert.alert('Missing Information', 'Please enter both a title and content');
       return;
     }
+
+    const attachmentUris = attachments.length > 0 ? attachments.map((a) => a.uri) : undefined;
 
     if (editingEntry) {
       updateVaultEntry(editingEntry.id, {
@@ -54,14 +153,16 @@ export default function VaultCodexScreen() {
         content: newEntry.content,
         category: newEntry.category,
         importance: newEntry.importance,
+        attachments: attachmentUris || editingEntry.attachments,
       });
       setEditingEntry(null);
       Alert.alert('Vault Entry Updated', 'Data updated successfully');
     } else {
-      addVaultEntry(newEntry.title, newEntry.content, newEntry.category, newEntry.importance);
+      addVaultEntry(newEntry.title, newEntry.content, newEntry.category, newEntry.importance, attachmentUris);
       Alert.alert('Vault Entry Created', 'Important data secured');
     }
     setNewEntry({ title: '', content: '', category: 'personal', importance: 'medium' });
+    setAttachments([]);
     setIsCreating(false);
   };
 
@@ -128,6 +229,7 @@ export default function VaultCodexScreen() {
               setIsCreating(false);
               setEditingEntry(null);
               setNewEntry({ title: '', content: '', category: 'personal', importance: 'medium' });
+              setAttachments([]);
             } else {
               setIsCreating(true);
             }
@@ -164,11 +266,57 @@ export default function VaultCodexScreen() {
                 style={[styles.input, styles.textArea]}
                 value={newEntry.content}
                 onChangeText={(text) => setNewEntry({ ...newEntry, content: text })}
-                placeholder="Secure information..."
+                placeholder="Secure information... (no character limit)"
                 placeholderTextColor="#666"
                 multiline
-                numberOfLines={6}
+                scrollEnabled
+                textAlignVertical="top"
               />
+
+              <Text style={styles.formLabel}>Attachments</Text>
+              <View style={styles.uploadSection}>
+                <View style={styles.uploadButtons}>
+                  <TouchableOpacity style={styles.uploadButton} onPress={pickImage}>
+                    <ImageIcon size={18} color="#DC143C" />
+                    <Text style={styles.uploadButtonText}>Gallery</Text>
+                  </TouchableOpacity>
+                  {Platform.OS !== 'web' && (
+                    <TouchableOpacity style={styles.uploadButton} onPress={takePhoto}>
+                      <Upload size={18} color="#DC143C" />
+                      <Text style={styles.uploadButtonText}>Camera</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity style={styles.uploadButton} onPress={pickDocument}>
+                    <FileText size={18} color="#DC143C" />
+                    <Text style={styles.uploadButtonText}>File</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {attachments.length > 0 && (
+                  <View style={styles.attachmentsList}>
+                    {attachments.map((att, idx) => (
+                      <View key={`att-${idx}-${att.name}`} style={styles.attachmentItem}>
+                        {att.type === 'image' ? (
+                          <Image source={{ uri: att.uri }} style={styles.attachmentThumb} />
+                        ) : (
+                          <View style={styles.fileThumb}>
+                            <FileText size={20} color="#DC143C" />
+                          </View>
+                        )}
+                        <Text style={styles.attachmentName} numberOfLines={1}>
+                          {att.name}
+                        </Text>
+                        <TouchableOpacity
+                          style={styles.removeAttachment}
+                          onPress={() => removeAttachment(idx)}
+                        >
+                          <X size={14} color="#FF453A" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
 
               <Text style={styles.formLabel}>Category</Text>
               <View style={styles.selectRow}>
@@ -263,6 +411,7 @@ export default function VaultCodexScreen() {
             filteredEntries.map((entry) => {
               const categoryColor = getCategoryColor(entry.category);
               const importanceColor = getImportanceColor(entry.importance);
+              const hasAttachments = entry.attachments && entry.attachments.length > 0;
 
               return (
                 <TouchableOpacity 
@@ -284,6 +433,12 @@ export default function VaultCodexScreen() {
                         <View style={styles.vaultMeta}>
                           <Calendar size={12} color="#999" />
                           <Text style={styles.vaultDate}>{formatDate(entry.timestamp)}</Text>
+                          {hasAttachments && (
+                            <View style={styles.attachmentBadge}>
+                              <ImageIcon size={10} color="#DC143C" />
+                              <Text style={styles.attachmentBadgeText}>{entry.attachments!.length}</Text>
+                            </View>
+                          )}
                         </View>
                       </View>
                     </View>
@@ -306,6 +461,18 @@ export default function VaultCodexScreen() {
                       {entry.content}
                     </Text>
 
+                    {hasAttachments && (
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.entryAttachmentsRow}>
+                        {entry.attachments!.map((uri, aIdx) => (
+                          <Image
+                            key={`${entry.id}-att-${aIdx}`}
+                            source={{ uri }}
+                            style={styles.entryAttachmentThumb}
+                          />
+                        ))}
+                      </ScrollView>
+                    )}
+
                     <View style={styles.vaultActions}>
                       <CopyButton
                         text={`${entry.title}\n[${entry.category.toUpperCase()}] [${entry.importance.toUpperCase()}]\n${entry.content}`}
@@ -324,6 +491,13 @@ export default function VaultCodexScreen() {
                             category: entry.category,
                             importance: entry.importance,
                           });
+                          setAttachments(
+                            (entry.attachments || []).map((uri, i) => ({
+                              uri,
+                              name: `attachment_${i + 1}`,
+                              type: 'image' as const,
+                            }))
+                          );
                           setIsCreating(true);
                         }}
                       >
@@ -420,6 +594,20 @@ export default function VaultCodexScreen() {
                 <Text style={styles.modalContentText}>{viewingEntry.content}</Text>
               </View>
 
+              {viewingEntry.attachments && viewingEntry.attachments.length > 0 && (
+                <View style={styles.modalAttachments}>
+                  <Text style={styles.modalContentLabel}>ATTACHMENTS ({viewingEntry.attachments.length})</Text>
+                  {viewingEntry.attachments.map((uri, idx) => (
+                    <Image
+                      key={`modal-att-${idx}`}
+                      source={{ uri }}
+                      style={styles.modalAttachmentImage}
+                      resizeMode="contain"
+                    />
+                  ))}
+                </View>
+              )}
+
               <CopyButton
                 text={`${viewingEntry.title}\n[${viewingEntry.category.toUpperCase()}] [${viewingEntry.importance.toUpperCase()}]\n\n${viewingEntry.content}`}
                 label="Copy Entry"
@@ -438,6 +626,13 @@ export default function VaultCodexScreen() {
                       category: viewingEntry.category,
                       importance: viewingEntry.importance,
                     });
+                    setAttachments(
+                      (viewingEntry.attachments || []).map((uri, i) => ({
+                        uri,
+                        name: `attachment_${i + 1}`,
+                        type: 'image' as const,
+                      }))
+                    );
                     setIsCreating(true);
                     setViewingEntry(null);
                   }}
@@ -554,8 +749,76 @@ const styles = StyleSheet.create({
     borderColor: '#333',
   },
   textArea: {
-    minHeight: 120,
+    minHeight: 150,
+    maxHeight: 400,
     textAlignVertical: 'top',
+  },
+  uploadSection: {
+    gap: 12,
+  },
+  uploadButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  uploadButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(220, 20, 60, 0.1)',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(220, 20, 60, 0.4)',
+    borderStyle: 'dashed',
+  },
+  uploadButtonText: {
+    fontSize: 12,
+    fontWeight: '700' as const,
+    color: '#DC143C',
+    letterSpacing: 0.5,
+  },
+  attachmentsList: {
+    gap: 8,
+  },
+  attachmentItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#333',
+  },
+  attachmentThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+    backgroundColor: '#222',
+  },
+  fileThumb: {
+    width: 44,
+    height: 44,
+    borderRadius: 6,
+    backgroundColor: 'rgba(220, 20, 60, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  attachmentName: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600' as const,
+    color: '#CCC',
+  },
+  removeAttachment: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 69, 58, 0.2)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   selectRow: {
     flexDirection: 'row',
@@ -693,6 +956,21 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
     color: '#999',
   },
+  attachmentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    marginLeft: 6,
+    backgroundColor: 'rgba(220, 20, 60, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  attachmentBadgeText: {
+    fontSize: 10,
+    fontWeight: '700' as const,
+    color: '#DC143C',
+  },
   vaultBadges: {
     flexDirection: 'row',
     gap: 8,
@@ -717,6 +995,16 @@ const styles = StyleSheet.create({
     color: '#AAA',
     lineHeight: 20,
     marginBottom: 12,
+  },
+  entryAttachmentsRow: {
+    marginBottom: 12,
+  },
+  entryAttachmentThumb: {
+    width: 56,
+    height: 56,
+    borderRadius: 8,
+    marginRight: 8,
+    backgroundColor: '#222',
   },
   vaultActions: {
     flexDirection: 'row',
@@ -838,6 +1126,21 @@ const styles = StyleSheet.create({
     fontWeight: '500' as const,
     color: '#CCC',
     lineHeight: 24,
+  },
+  modalAttachments: {
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#333',
+    gap: 12,
+  },
+  modalAttachmentImage: {
+    width: '100%',
+    height: 250,
+    borderRadius: 12,
+    backgroundColor: '#222',
   },
   modalActions: {
     flexDirection: 'row',
