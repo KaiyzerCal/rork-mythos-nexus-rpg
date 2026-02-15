@@ -1046,7 +1046,7 @@ RELATIONSHIPS MODULE:
             placeholder={enryuMode ? "Command ENRYU..." : "Ask MAVIS anything..."}
             placeholderTextColor="#666"
             multiline
-            maxLength={1000}
+            maxLength={10000}
           />
           {isStreaming ? (
             <TouchableOpacity
