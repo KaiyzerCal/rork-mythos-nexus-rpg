@@ -1,64 +1,62 @@
 ﻿{
-  "expo": {
-    "name": "Mythos Nexus RPG",
-    "slug": "mythos-nexus-rpg",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "rork-app",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "app.rork.mythos-nexus-rpg",
-      "runtimeVersion": {
-        "policy": "appVersion"
-      }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "package": "app.rork.mythos_nexus_rpg",
-      "runtimeVersion": "1.0.0"
-    },
-    "web": {
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": "https://rork.com/"
-        }
-      ],
-      "expo-font",
-      "expo-web-browser",
-      "expo-sqlite"
-    ],
-    "updates": {
-  "enabled": true,
-  "fallbackToCacheTimeout": 30000,
-  "url": "https://u.expo.dev/5efca233-e8dc-424b-8bc0-acf1b9c04737"
+    "expo":  {
+                 "name":  "Mythos Nexus RPG",
+                 "slug":  "mythos-nexus-rpg",
+                 "version":  "1.0.0",
+                 "orientation":  "portrait",
+                 "icon":  "./assets/images/icon.png",
+                 "scheme":  "rork-app",
+                 "userInterfaceStyle":  "automatic",
+                 "newArchEnabled":  false,
+                 "splash":  {
+                                "image":  "./assets/images/splash-icon.png",
+                                "resizeMode":  "contain",
+                                "backgroundColor":  "#ffffff"
+                            },
+                 "ios":  {
+                             "supportsTablet":  true,
+                             "bundleIdentifier":  "app.rork.mythos-nexus-rpg",
+                             "runtimeVersion":  {
+                                                    "policy":  "appVersion"
+                                                }
+                         },
+                 "android":  {
+                                 "adaptiveIcon":  {
+                                                      "foregroundImage":  "./assets/images/adaptive-icon.png",
+                                                      "backgroundColor":  "#ffffff"
+                                                  },
+                                 "package":  "app.rork.mythos_nexus_rpg",
+                                 "runtimeVersion":  "1.0.0"
+                             },
+                 "web":  {
+                             "favicon":  "./assets/images/favicon.png"
+                         },
+                 "plugins":  [
+                                 [
+                                     "expo-router",
+                                     {
+                                         "origin":  "https://rork.com/"
+                                     }
+                                 ],
+                                 "expo-font",
+                                 "expo-web-browser",
+                                 "expo-sqlite"
+                             ],
+                 "updates":  {
+                                 "enabled":  true,
+                                 "fallbackToCacheTimeout":  3000,
+                                 "url":  "https://u.expo.dev/5efca233-e8dc-424b-8bc0-acf1b9c04737"
+                             },
+                 "experiments":  {
+                                     "typedRoutes":  false
+                                 },
+                 "extra":  {
+                               "router":  {
+                                              "origin":  "https://rork.com/"
+                                          },
+                               "eas":  {
+                                           "projectId":  "5efca233-e8dc-424b-8bc0-acf1b9c04737"
+                                       }
+                           }
+             }
 }
-,
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {
-        "origin": "https://rork.com/"
-      },
-      "eas": {
-        "projectId": "5efca233-e8dc-424b-8bc0-acf1b9c04737"
-      }
-    }
-  }
-}
-
