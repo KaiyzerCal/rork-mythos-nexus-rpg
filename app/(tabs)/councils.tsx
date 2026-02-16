@@ -424,11 +424,19 @@ Does this conversation meaningfully contribute to character growth?`,
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {messages.map((msg, idx) => {
-            const messageKey = msg.id ? `msg-${msg.id}` : `msg-fallback-${idx}`;
+          {messages.reduce<Array<{ msg: typeof messages[0]; uniqueKey: string }>>((acc, msg, idx) => {
+            const baseKey = msg.id && msg.id.trim() ? `msg-${msg.id}` : `msg-fallback-${idx}-${msg.role}`;
+            let uniqueKey = baseKey;
+            const existingKeys = new Set(acc.map(a => a.uniqueKey));
+            if (existingKeys.has(uniqueKey)) {
+              uniqueKey = `${baseKey}-dup-${idx}`;
+            }
+            acc.push({ msg, uniqueKey });
+            return acc;
+          }, []).map(({ msg, uniqueKey }) => {
             return (
               <View
-                key={messageKey}
+                key={uniqueKey}
                 style={[
                   styles.messageCard,
                   msg.role === 'user' ? styles.userMessageCard : styles.assistantMessageCard,
