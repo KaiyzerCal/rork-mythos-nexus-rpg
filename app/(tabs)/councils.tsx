@@ -473,7 +473,7 @@ Does this conversation meaningfully contribute to character growth?`,
                         }
                       }
                       return (
-                        <View key={`${messageKey}-text-${partIdx}`}>
+                        <View key={`${uniqueKey}-text-${partIdx}`}>
                           <Text style={[
                             styles.messageText,
                             msg.role === 'user' ? styles.userMessageText : styles.assistantMessageText,
@@ -487,7 +487,7 @@ Does this conversation meaningfully contribute to character growth?`,
                       const toolPart = part as any;
                       if (toolPart.state === 'input-streaming' || toolPart.state === 'input-available') {
                         return (
-                          <View key={`${messageKey}-tool-${partIdx}`}>
+                          <View key={`${uniqueKey}-tool-${partIdx}`}>
                             <Text style={[
                               styles.messageText,
                               styles.assistantMessageText,
