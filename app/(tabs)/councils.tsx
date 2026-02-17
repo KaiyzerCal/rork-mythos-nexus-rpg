@@ -166,9 +166,15 @@ CRITICAL: Keep ALL responses concise and condensed to EXACTLY 4 PARAGRAPHS MAXIM
   };
 
   const [analyzingGrowth, setAnalyzingGrowth] = useState(false);
+  const growthAnalysisRef = useRef(false);
 
   const analyzeConversationGrowth = async (conversationHistory: string, memberName: string) => {
+    if (growthAnalysisRef.current) {
+      console.log(`[COUNCIL:${memberName}] Growth analysis already in progress, skipping`);
+      return null;
+    }
     try {
+      growthAnalysisRef.current = true;
       setAnalyzingGrowth(true);
       console.log(`[COUNCIL:${memberName}] Analyzing conversation for growth...`);
       
@@ -202,7 +208,6 @@ Does this conversation meaningfully contribute to character growth?`,
 
       console.log(`[COUNCIL:${memberName}] Growth analysis result:`, growthAnalysis);
       
-      // Cap XP at 100 as a safety measure
       if (growthAnalysis.xpAmount > 100) {
         console.warn(`[COUNCIL:${memberName}] XP amount ${growthAnalysis.xpAmount} exceeded 100, capping at 100`);
         growthAnalysis.xpAmount = 100;
@@ -213,6 +218,7 @@ Does this conversation meaningfully contribute to character growth?`,
       console.error(`[COUNCIL:${memberName}] Error analyzing conversation growth:`, error);
       return null;
     } finally {
+      growthAnalysisRef.current = false;
       setAnalyzingGrowth(false);
     }
   };
@@ -247,9 +253,12 @@ Does this conversation meaningfully contribute to character growth?`,
     }]);
   };
 
+  const isSendingRef = useRef(false);
+
   const handleSend = async () => {
-    if (!input.trim() || !activeConversation) return;
+    if (!input.trim() || !activeConversation || isSendingRef.current) return;
     
+    isSendingRef.current = true;
     const userInput = input.trim();
     setInput('');
     
@@ -259,7 +268,13 @@ Does this conversation meaningfully contribute to character growth?`,
     const tempId = `user-${Date.now()}`;
     setUserInputMap((prev) => ({ ...prev, [tempId]: userInput }));
     
-    await sendMessage({ text: fullMessage });
+    try {
+      await sendMessage({ text: fullMessage });
+    } catch (error) {
+      console.error(`[COUNCIL] Error sending message:`, error);
+    } finally {
+      isSendingRef.current = false;
+    }
     
     setUserInputMap((prev) => {
       const updated = { ...prev };
@@ -270,9 +285,8 @@ Does this conversation meaningfully contribute to character growth?`,
       return updated;
     });
 
-    // Analyze conversation for growth after council member responds
     setTimeout(async () => {
-      const recentMessages = messages.slice(-6); // Last 3 exchanges
+      const recentMessages = messages.slice(-6);
       const conversationHistory = recentMessages
         .map((msg) => {
           const role = msg.role === 'user' ? 'User' : activeConversation.name;
@@ -287,12 +301,17 @@ Does this conversation meaningfully contribute to character growth?`,
         console.log(`[COUNCIL:${activeConversation.name}] Awarding ${safeXP} XP for ${analysis.growthType} growth`);
         addXP(safeXP);
         
-        // Send a brief acknowledgment
-        setTimeout(() => {
-          sendMessage({ 
-            text: `[Council System: ${analysis.reason} You've been awarded ${safeXP} XP for this growth-oriented counsel.]` 
-          });
-        }, 500);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `xp-${Date.now()}`,
+            role: 'assistant' as const,
+            parts: [{
+              type: 'text' as const,
+              text: `[Council System: ${analysis.reason} You've been awarded ${safeXP} XP for this growth-oriented counsel.]`,
+            }],
+          },
+        ]);
       }
     }, 2000);
   };
