@@ -1,4 +1,4 @@
-export interface NeumannModule {
+﻿export interface NeumannModule {
   id: string;
   name: string;
   description: string;
@@ -139,32 +139,32 @@ export const getModuleFunctions = (moduleId: string): string[] => {
 export const buildModuleContext = (): string => {
   return `
 ===================================================
-AGI EXPANSION LAYER — MODULES INSTALLED
+AGI EXPANSION LAYER €” MODULES INSTALLED
 ===================================================
 
-🧠 NEUMANN CONSIGLIERE:
-${NEUMANN_CONSIGLIERE.functions.map(f => `  • ${f.replace(/_/g, ' ')}`).join('\n')}
+ðŸ§  NEUMANN CONSIGLIERE:
+${NEUMANN_CONSIGLIERE.functions.map(f => `  €¢ ${f.replace(/_/g, ' ')}`).join('\n')}
 
-🦇 WAYNE SYSTEMS:
+ðŸ¦‡ WAYNE SYSTEMS:
   
   BATFILE:
-${WAYNE_BATFILE.functions.map(f => `  • ${f.replace(/_/g, ' ')}`).join('\n')}
+${WAYNE_BATFILE.functions.map(f => `  €¢ ${f.replace(/_/g, ' ')}`).join('\n')}
   
   MASK PROTOCOL:
-${WAYNE_MASK_PROTOCOL.modes?.map(m => `  • ${m.replace(/_/g, ' ')}`).join('\n')}
+${WAYNE_MASK_PROTOCOL.modes?.map(m => `  €¢ ${m.replace(/_/g, ' ')}`).join('\n')}
   
   FREQUENCY BOOST:
-${WAYNE_FREQUENCY_BOOST.functions.map(f => `  • ${f.replace(/_/g, ' ')}`).join('\n')}
+${WAYNE_FREQUENCY_BOOST.functions.map(f => `  €¢ ${f.replace(/_/g, ' ')}`).join('\n')}
 
-⚙️ CORE ENGINE OS:
-${CORE_ENGINE_OS.engines.map(e => `  • ${e.replace(/_/g, ' ')}`).join('\n')}
+š™ï¸ CORE ENGINE OS:
+${CORE_ENGINE_OS.engines.map(e => `  €¢ ${e.replace(/_/g, ' ')}`).join('\n')}
 
-🌑 SHADOW SYSTEMS:
-  • Drift Prevention
-  • Shadow Forecast
-  • Shadow Recalibration
+ðŸŒ‘ SHADOW SYSTEMS:
+  €¢ Drift Prevention
+  €¢ Shadow Forecast
+  €¢ Shadow Recalibration
 
-✅ OPTIMIZATION LAYER: Active
+… OPTIMIZATION LAYER: Active
    - Neumann optimization applied to all decisions
    - Recursive intelligence enabled
    - Pattern learning active
@@ -174,4 +174,5 @@ ${CORE_ENGINE_OS.engines.map(e => `  • ${e.replace(/_/g, ' ')}`).join('\n')}
 ===================================================
 `;
 };
+
 

@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Modal, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useState } from 'react';
 import { ChevronDown, ChevronRight, Plus, X, Edit2, Trash2 } from 'lucide-react-native';
@@ -7,7 +7,10 @@ import type { EnergySystem } from '@/types/rpg';
 
 export default function AllSkillsScreen() {
   const { gameState, skillSubTrees, addSkill, updateSkill, deleteSkill, addSubSkill, updateSubSkill, deleteSubSkill } = useGame();
-  const { skillTrees } = gameState;
+  
+  if (!gameState) {
+    return null;
+  }const { skillTrees } = gameState;
   const [expandedSkills, setExpandedSkills] = useState<Set<string>>(new Set());
   const [showAddModal, setShowAddModal] = useState(false);
   const [showAddSubModal, setShowAddSubModal] = useState(false);
@@ -1014,3 +1017,4 @@ const styles = StyleSheet.create({
     textAlign: 'center' as const,
   },
 });
+

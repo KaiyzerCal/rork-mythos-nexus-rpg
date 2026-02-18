@@ -1,4 +1,4 @@
-import type { SkillTreeNode } from '@/types/rpg';
+﻿import type { SkillTreeNode } from '@/types/rpg';
 
 export const SKILL_TREES: SkillTreeNode[] = [
   {
@@ -335,7 +335,7 @@ export const SKILL_TREES: SkillTreeNode[] = [
   },
   {
     id: 'full-cowl',
-    name: 'Full Cowl — Black Heart Pulse Modulation',
+    name: 'Full Cowl €” Black Heart Pulse Modulation',
     description: 'Energetic vibration control; match and hold target BPM of the Black Heart Pulse. Signature technique allowing precise BPM synchronization and energy optimization.',
     tier: 7,
     unlocked: true,
@@ -397,3 +397,4 @@ export const SKILL_SUB_TREES: Record<string, SkillTreeNode[]> = {
     { id: 'fc-feedback-loop', name: 'Black Heart Feedback Loop', description: 'Each heartbeat refines signal; longer alignment increases power exponentially', tier: 7, unlocked: true, cost: 2000, energyType: 'Black Heart', category: 'Signature' },
   ],
 };
+

@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { Flame, Zap, Info, Check, Plus, Edit2, Trash2, Save, X } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, Modal, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
@@ -19,7 +19,10 @@ const TIER_FILTERS = [
 
 export default function TransformationsScreen() {
   const { gameState, setCurrentForm, addTransformation, updateTransformation, deleteTransformation } = useGame();
-  const [selectedTier, setSelectedTier] = useState<string>('All');
+  
+  if (!gameState) {
+    return null;
+  }const [selectedTier, setSelectedTier] = useState<string>('All');
   const [selectedForm, setSelectedForm] = useState<TransformationData | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [editMode, setEditMode] = useState(false);
@@ -979,3 +982,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+
+

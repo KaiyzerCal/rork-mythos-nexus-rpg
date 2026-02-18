@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ShoppingCart, Sparkles, Lock, Check, Edit2, Plus, Trash2, GripVertical, X, Save } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -24,7 +24,7 @@ const STORE_ITEMS: StoreItem[] = [
   {
     id: 'lacrima-pack',
     name: 'Lacrima Crystal Pack',
-    description: '5× Lacrima Crystals for energy restoration',
+    description: '5Ã— Lacrima Crystals for energy restoration',
     price: 250,
     currency: 'Codex Points',
     rarity: 'rare',
@@ -65,7 +65,7 @@ const STORE_ITEMS: StoreItem[] = [
   {
     id: 'xp-boost',
     name: 'XP Multiplier (24h)',
-    description: '×2 XP gain for 24 hours',
+    description: 'Ã—2 XP gain for 24 hours',
     price: 500,
     currency: 'Codex Points',
     rarity: 'rare',
@@ -84,7 +84,10 @@ const STORE_ITEMS: StoreItem[] = [
 
 export default function StoreScreen() {
   const { gameState, saveStoreItems } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [editMode, setEditMode] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -358,13 +361,13 @@ export default function StoreScreen() {
                       {item.requirements.level && (
                         <Text style={styles.requirementText}>
                           Level {item.requirements.level}
-                          {gameState.stats.level >= item.requirements.level ? ' ✓' : ''}
+                          {gameState.stats.level >= item.requirements.level ? ' “' : ''}
                         </Text>
                       )}
                       {item.requirements.rank && (
                         <Text style={styles.requirementText}>
                           Rank {item.requirements.rank}
-                          {meetsReqs ? ' ✓' : ''}
+                          {meetsReqs ? ' “' : ''}
                         </Text>
                       )}
                     </View>
@@ -916,4 +919,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 });
+
+
 

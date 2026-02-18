@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { Target, Plus, Check, X, Trash2, CheckSquare, Repeat, Flame, Edit } from 'lucide-react-native';
 import React, { useState, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert, KeyboardAvoidingView, Platform } from 'react-native';
@@ -9,7 +9,10 @@ import { copyToClipboard, getClipboardText } from "../src/utils/clipboard";
 
 export default function QuestsScreen() {
   const { gameState, addQuest, updateQuestProgress, completeQuest, deleteQuest, updateQuest, addTask, updateTask, completeTask, deleteTask } = useGame();
-  const [activeTab, setActiveTab] = useState<'quests' | 'tasks'>('quests');
+  
+  if (!gameState) {
+    return null;
+  }const [activeTab, setActiveTab] = useState<'quests' | 'tasks'>('quests');
   const [modalVisible, setModalVisible] = useState(false);
   const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
@@ -132,7 +135,7 @@ export default function QuestsScreen() {
       subTree.forEach(sub => {
         subSkills.push({
           id: sub.id,
-          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} â†’ ${sub.name}`,
+          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} Ã¢€ €™ ${sub.name}`,
           isParent: false,
           parentId,
         });
@@ -246,7 +249,7 @@ export default function QuestsScreen() {
       const parentSkill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
       const subSkill = gameState.skillSubTrees?.[task.linkedSkillId]?.find(s => s.id === task.linkedSubSkillId);
       if (parentSkill && subSkill) {
-        return `${parentSkill.name} â†’ ${subSkill.name}`;
+        return `${parentSkill.name} Ã¢€ €™ ${subSkill.name}`;
       }
     } else {
       const skill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
@@ -1507,4 +1510,6 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+
+
 

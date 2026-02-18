@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import type { SkillTreeNode } from '@/types/rpg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Zap, Lock, CheckCircle, TrendingUp, Sparkles } from 'lucide-react-native';
@@ -8,7 +8,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SkillsScreen() {
   const { gameState, unlockSkill, skillSubTrees } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [expandedSkills, setExpandedSkills] = useState<Record<string, boolean>>({});
 
@@ -213,7 +216,7 @@ export default function SkillsScreen() {
                       onPress={() => setExpandedSkills(prev => ({ ...prev, [skill.id]: !prev[skill.id] }))}
                     >
                       <Text style={styles.expandButtonText}>
-                        {expandedSkills[skill.id] ? '▼' : '▶'} {skillSubTrees[skill.id].length} Sub-Skills
+                        {expandedSkills[skill.id] ? '–¼' : '–¶'} {skillSubTrees[skill.id].length} Sub-Skills
                       </Text>
                     </TouchableOpacity>
 
@@ -560,4 +563,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
+
+
 

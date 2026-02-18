@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Star, Zap, Crown, Shield, Flame } from "lucide-react-native";
 import React from 'react';
@@ -7,7 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function CharacterScreen() {
   const { gameState } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
 
   const totalXPEarned = gameState.stats.level * 1000 + gameState.stats.xp;
   const questsCompleted = gameState.quests.filter((q) => q.status === 'completed').length;
@@ -507,3 +510,4 @@ const styles = StyleSheet.create({
     color: '#FFD700',
   },
 });
+

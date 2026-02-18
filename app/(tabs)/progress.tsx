@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { CheckCircle, Circle, Lock, TrendingUp } from "lucide-react-native";
 import React, { useState } from 'react';
@@ -9,7 +9,10 @@ type Tab = 'skills' | 'quests' | 'achievements';
 
 export default function ProgressScreen() {
   const { gameState, isLoading, completeQuest, updateQuestProgress, unlockSkill } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<Tab>('quests');
 
   if (isLoading) {
@@ -528,6 +531,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
 
 
 

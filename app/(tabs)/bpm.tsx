@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Activity, Heart, TrendingUp, Minus, Plus } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -7,7 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function BPMTrackerScreen() {
   const { gameState, setBPM } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [manualBPM, setManualBPM] = useState<string>((gameState?.currentBPM ?? 65).toString());
   const [mood, setMood] = useState<string>('');
   const [notes, setNotes] = useState<string>('');
@@ -200,7 +203,7 @@ function SessionCard({ session }: SessionCardProps) {
           <Text style={styles.sessionBPM}>{session.bpm}</Text>
         </View>
         <Text style={styles.sessionTime}>
-          {dateStr} • {timeStr}
+          {dateStr} €¢ {timeStr}
         </Text>
       </View>
       <Text style={styles.sessionForm}>{session.form}</Text>
@@ -423,5 +426,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
 });
+
+
 
 

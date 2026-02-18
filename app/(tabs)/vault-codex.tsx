@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Shield, Plus, Lock, Calendar, AlertCircle, Edit2, Trash2 } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -8,7 +8,10 @@ import type { VaultEntry } from '@/types/rpg';
 
 export default function VaultCodexScreen() {
   const { gameState, addVaultEntry, updateVaultEntry, deleteVaultEntry } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [isCreating, setIsCreating] = useState(false);
   const [editingEntry, setEditingEntry] = useState<VaultEntry | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -368,7 +371,7 @@ export default function VaultCodexScreen() {
               style={styles.closeButton}
               onPress={() => setViewingEntry(null)}
             >
-              <Text style={styles.closeButtonText}>✕</Text>
+              <Text style={styles.closeButtonText}>•</Text>
             </TouchableOpacity>
           </View>
 
@@ -844,4 +847,6 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 });
+
+
 

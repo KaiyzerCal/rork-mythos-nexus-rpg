@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Users, Heart, Shield, Swords } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -8,7 +8,10 @@ import type { AllyData } from '@/types/rpg';
 
 export default function AlliesScreen() {
   const { gameState } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [selectedRelationship, setSelectedRelationship] = useState<string>('all');
 
   const relationships = ['all', 'harem', 'ally', 'council', 'rival'];
@@ -400,3 +403,4 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 });
+

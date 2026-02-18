@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Modal, Alert, Keyboard } from 'react-native';
 import React, { useState, useRef, useEffect } from 'react';
 import { Users, Crown, Lightbulb, Eye, MessageCircle, Send, ChevronLeft, Plus, Edit2, Trash2, X, RefreshCw } from 'lucide-react-native';
@@ -7,14 +7,29 @@ import { z } from 'zod';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ALL_COUNCIL_MEMBERS } from '@/constants/councils-v2';
 
+// --- safety: default undefined arrays to [] (prevents .length of undefined) ---
+const arr = <T,>(v: T[] | undefined | null) => (Array.isArray(v) ? v : []);
+
 
 
 type CouncilClass = 'core' | 'advisory' | 'think-tank' | 'shadows';
 
 export default function CouncilsScreen() {
-  const insets = useSafeAreaInsets();
+  
+  if (__DEV__) {
+    try {
+      // @ts-ignore
+      const s: any = (typeof state !== 'undefined' ? state : undefined);
+      console.log('[CouncilsScreen] state keys:', Object.keys(s ?? {}));
+      console.log('[CouncilsScreen] councils:', s?.councils, 'isArray:', Array.isArray(s?.councils));
+    } catch (e) {}
+  }
+const insets = useSafeAreaInsets();
   const { gameState, councilMembers, addCouncilMember, updateCouncilMember, deleteCouncilMember, addXP } = useGame();
-  const [selectedClass, setSelectedClass] = useState<string>('all');
+  
+  if (!gameState) {
+    return null;
+  }const [selectedClass, setSelectedClass] = useState<string>('all');
   const [activeConversation, setActiveConversation] = useState<typeof councilMembers[0] | null>(null);
   const [input, setInput] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
@@ -53,97 +68,97 @@ void _mainCouncils;
     
     const systemContext = `=== COMPREHENSIVE SYSTEM CONTEXT ===
 
-📋 IDENTITY:
+ðŸ“‹ IDENTITY:
 - Name: ${identity.inscribedName}
-- Titles: ${identity.titles.join(' • ')}
-- Species: ${identity.speciesLineage[identity.speciesLineage.length - 1]}
+- Titles: ${identity.titles.join(' €¢ ')}
+- Species: ${identity.speciesLineage[arr().length - 1]}
 - Territory: ${identity.territory.class}
 - Tower Floors: ${identity.territory.towerFloorsInfluence}
 - Arc Story: ${arcStory || 'Unknown'}
 
-⚡ CURRENT STATUS:
+š¡ CURRENT STATUS:
 - Level ${stats.level} | Rank ${stats.rank} | XP: ${stats.xp}/${stats.xpToNextLevel}
 - Current Form: ${currentForm} (${currentBPM} BPM - energetic vibration, NOT heart rate)
 - Fatigue: ${stats.fatigue}/100 | Full Cowl Sync: ${stats.fullCowlSync}% | Codex Integrity: ${stats.codexIntegrity}%
-- Stats: STR ${stats.STR} • AGI ${stats.AGI} • VIT ${stats.VIT} • INT ${stats.INT} • WIS ${stats.WIS} • CHA ${stats.CHA} • LCK ${stats.LCK}
+- Stats: STR ${stats.STR} €¢ AGI ${stats.AGI} €¢ VIT ${stats.VIT} €¢ INT ${stats.INT} €¢ WIS ${stats.WIS} €¢ CHA ${stats.CHA} €¢ LCK ${stats.LCK}
 - Tower Floor: ${currentFloor} | GPR: ${gpr} | PVP Rating: ${pvpRating}
 - Aura Power: ${stats.auraPower}
 
-💰 CURRENCIES:
-${currencies.map(c => `- ${c.icon} ${c.name}: ${c.amount}`).join('\n')}
+ðŸ’° CURRENCIES:
+${arr().map(c => `- ${c.icon} ${c.name}: ${c.amount}`).join('\n')}
 
-🌀 ENERGY SYSTEMS (${energySystems.length} total):
-${energySystems.map(e => `- ${e.type}: ${e.current}/${e.max} (${e.status}) - ${e.description}`).join('\n')}
+ðŸŒ€ ENERGY SYSTEMS (${arr().length} total):
+${arr().map(e => `- ${e.type}: ${e.current}/${e.max} (${e.status}) - ${e.description}`).join('\n')}
 
-🔥 TRANSFORMATIONS (${transformations.length} forms unlocked):
+ðŸ”¥ TRANSFORMATIONS (${arr().length} forms unlocked):
 ${transformations.slice(0, 8).map(t => {
   return `- ${t.name} (${t.bpmRange} BPM) - ${t.category || 'Transformation'} - ${t.description || 'No description'}`;
 }).join('\n')}
-${transformations.length > 8 ? `... and ${transformations.length - 8} more forms` : ''}
+${arr().length > 8 ? `... and ${arr().length - 8} more forms` : ''}
 
-⚔️ SKILLS & ABILITIES (${unlockedSkills.length} unlocked):
+š”ï¸ SKILLS & ABILITIES (${arr().length} unlocked):
 ${unlockedSkills.slice(0, 10).map(s => {
   const proficiencyKey = s.id;
   const proficiency = skillProficiency?.[proficiencyKey] || 0;
   return `- ${s.name} (${s.energyType}) [Prof: ${proficiency}] - ${s.description}`;
 }).join('\n')}
-${unlockedSkills.length > 10 ? `... and ${unlockedSkills.length - 10} more skills` : ''}
+${arr().length > 10 ? `... and ${arr().length - 10} more skills` : ''}
 
-🎯 ACTIVE QUESTS (${activeQuests.length}):
-${activeQuests.map(q => `- ${q.title}: ${q.progress ? `${q.progress.current}/${q.progress.target}` : 'ongoing'} (${q.xpReward} XP)${q.realWorldMapping ? ` - ${q.realWorldMapping}` : ''}`).join('\n')}
-${completedQuests.length > 0 ? `\nCompleted: ${completedQuests.length} quests` : ''}
+ðŸŽ¯ ACTIVE QUESTS (${arr().length}):
+${arr().map(q => `- ${q.title}: ${q.progress ? `${q.progress.current}/${q.progress.target}` : 'ongoing'} (${q.xpReward} XP)${q.realWorldMapping ? ` - ${q.realWorldMapping}` : ''}`).join('\n')}
+${arr().length > 0 ? `\nCompleted: ${arr().length} quests` : ''}
 
-✅ TASKS & HABITS (${allTasks.length} total):
+… TASKS & HABITS (${arr().length} total):
 ${allTasks.slice(0, 8).map(t => {
   const linkedSkill = t.linkedSkillId ? skillTrees.find(s => s.id === t.linkedSkillId) : null;
   const skillInfo = linkedSkill ? ` [Linked: ${linkedSkill.name}${t.skillXpReward ? ` +${t.skillXpReward} Prof` : ''}]` : '';
   return `- ${t.title} (${t.recurrence}) [${t.status}] Completed: ${t.completedCount} Streak: ${t.streak || 0}${skillInfo}`;
 }).join('\n')}
-${allTasks.length > 8 ? `... and ${allTasks.length - 8} more tasks` : ''}
+${arr().length > 8 ? `... and ${arr().length - 8} more tasks` : ''}
 
-📅 TODAY'S RITUALS (${todayRituals.length} pending):
-${todayRituals.map(r => `- ${r.name} (${r.type}): +${r.xpReward} XP - ${r.description}`).join('\n')}
-${completedRituals.length > 0 ? `\nCompleted Today: ${completedRituals.length} rituals` : ''}
+ðŸ“… TODAY'S RITUALS (${arr().length} pending):
+${arr().map(r => `- ${r.name} (${r.type}): +${r.xpReward} XP - ${r.description}`).join('\n')}
+${arr().length > 0 ? `\nCompleted Today: ${arr().length} rituals` : ''}
 
-👥 COUNCILS & ALLIES:
-Council Members (${councilMembers.length} total):
-${councilMembers.map(c => `- ${c.name} (${c.class}): ${c.role} - ${c.specialty || 'General'} - ${c.notes}`).join('\n')}
+ðŸ‘¥ COUNCILS & ALLIES:
+Council Members (${arr().length} total):
+${arr().map(c => `- ${c.name} (${c.class}): ${c.role} - ${c.specialty || 'General'} - ${c.notes}`).join('\n')}
 
-Allies (${allies.length} total):
-${topAllies.map(a => `- ${a.name} (${a.relationship}) Lv.${a.level} - ${a.specialty} [Affinity: ${a.affinity}%]`).join('\n')}
+Allies (${arr().length} total):
+${arr().map(a => `- ${a.name} (${a.relationship}) Lv.${a.level} - ${a.specialty} [Affinity: ${a.affinity}%]`).join('\n')}
 
-🎒 EQUIPPED ITEMS (${equippedItems.length}):
-${equippedItems.map(i => `- [${i.slot}] ${i.name} (${i.tier}) - ${i.description}`).join('\n')}
+ðŸŽ’ EQUIPPED ITEMS (${arr().length}):
+${arr().map(i => `- [${i.slot}] ${i.name} (${i.tier}) - ${i.description}`).join('\n')}
 
-📊 COMPLETE RANKINGS/ROSTER (${allRoster.length} tracked):
-${allRoster.map((r, idx) => `#${idx + 1} ${r.display} (${r.role}) ${r.rank} Lv.${r.level} | GPR: ${r.gpr} | PvP: ${(r.pvp/1000).toFixed(1)} | ${r.jjkGrade} ${r.opTier} | ${r.influence}${r.notes ? ` - ${r.notes}` : ''}`).join('\n')}
+ðŸ“Š COMPLETE RANKINGS/ROSTER (${arr().length} tracked):
+${arr().map((r, idx) => `#${idx + 1} ${r.display} (${r.role}) ${r.rank} Lv.${r.level} | GPR: ${r.gpr} | PvP: ${(r.pvp/1000).toFixed(1)} | ${r.jjkGrade} ${r.opTier} | ${r.influence}${r.notes ? ` - ${r.notes}` : ''}`).join('\n')}
 
-🔒 COMPLETE VAULT CODEX (${allVault.length} entries):
-${allVault.map(v => {
+ðŸ”’ COMPLETE VAULT CODEX (${arr().length} entries):
+${arr().map(v => {
   const date = new Date(v.timestamp).toLocaleDateString();
   return `- [${v.category.toUpperCase()}] ${v.title} (${v.importance.toUpperCase()}) - ${date}\n  Content: ${v.content}`;
 }).join('\n\n')}
 
-🏋️ REAL-WORLD MODULES:
+ðŸ‹ï¸ REAL-WORLD MODULES:
 Fitness:
   - Weekly Target: ${realWorldModules.fitness.habitTargets.weekSessions} sessions
   - Recovery Days: ${realWorldModules.fitness.habitTargets.recoveryDays}
   - YMCA Credit: ${realWorldModules.fitness.ymcaBootcampCredit.perClassXP} XP/class (${realWorldModules.fitness.ymcaBootcampCredit.capWeek} weekly cap)
 
 Business:
-  - Nodes: ${realWorldModules.business.nodes.join(' • ')}
+  - Nodes: ${realWorldModules.business.nodes.join(' €¢ ')}
   - Daily Rule: ${realWorldModules.business.dailyRule}
 
 Legal Case:
   - ${realWorldModules.legalCase.coreStory}
-  - Evidence: ${realWorldModules.legalCase.evidenceTypes.join(' • ')}
-  - Next Steps: ${realWorldModules.legalCase.nextSteps.join(' • ')}
+  - Evidence: ${realWorldModules.legalCase.evidenceTypes.join(' €¢ ')}
+  - Next Steps: ${realWorldModules.legalCase.nextSteps.join(' €¢ ')}
 
 Relationships:
   - Rizz Aura: ${realWorldModules.relationships.rizzAuraEnabled ? 'ACTIVE' : 'inactive'}
-  - Safety Rules: ${realWorldModules.relationships.safetyRules.join(' • ')}
+  - Safety Rules: ${realWorldModules.relationships.safetyRules.join(' €¢ ')}
 
-💡 KEY NOTES:
+ðŸ’¡ KEY NOTES:
 - BPM = ENERGETIC VIBRATION (not physical heart rate). Each transformation has a BPM range representing consciousness frequency.
 - Full Cowl = Black Heart Pulse Modulation - signature technique for precise BPM synchronization.
 - All tabs are interconnected: Character, Transformations, Energy, Quests, Tasks, Skills, Councils, Inventory, Rituals, Vault, Tower, Rankings, Progress, and Mavis chat.
@@ -219,7 +234,7 @@ Does this conversation meaningfully contribute to character growth?`,
   const isLoading = status === 'streaming';
 
   useEffect(() => {
-    if (messages.length > 0) {
+    if (arr().length > 0) {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }
   }, [messages]);
@@ -327,7 +342,7 @@ Does this conversation meaningfully contribute to character growth?`,
   const handleResetCouncils = () => {
     Alert.alert(
       'Reset Councils',
-      `This will reset all councils to the default ${ALL_COUNCIL_MEMBERS.length} members. Are you sure?`,
+      `This will reset all councils to the default ${arr().length} members. Are you sure?`,
       [
         { text: 'Cancel', style: 'cancel' },
         { 
@@ -410,7 +425,7 @@ Does this conversation meaningfully contribute to character growth?`,
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {messages.map((msg, idx) => {
+          {arr().map((msg, idx) => {
             const messageKey = msg.id ? `msg-${msg.id}` : `msg-fallback-${idx}`;
             return (
               <View
@@ -495,10 +510,10 @@ Does this conversation meaningfully contribute to character growth?`,
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>Councils</Text>
-          <Text style={styles.subtitle}>{councilMembers.length} Members</Text>
+          <Text style={styles.subtitle}>{arr().length} Members</Text>
         </View>
         <View style={styles.headerActions}>
-          {councilMembers.length === 0 && (
+          {arr().length === 0 && (
             <TouchableOpacity style={styles.resetButton} onPress={handleResetCouncils}>
               <RefreshCw size={16} color="#08C284" />
               <Text style={styles.resetButtonText}>Reset</Text>
@@ -512,7 +527,7 @@ Does this conversation meaningfully contribute to character growth?`,
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.classScroll}>
-        {classes.map((cls) => (
+        {arr().map((cls) => (
           <TouchableOpacity
             key={cls}
             style={[
@@ -534,7 +549,7 @@ Does this conversation meaningfully contribute to character growth?`,
       </ScrollView>
 
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
-        {filteredMembers.map((member) => (
+        {arr().map((member) => (
           <View key={member.id} style={styles.memberCard}>
             <View style={styles.memberHeader}>
               <View style={styles.memberInfo}>
@@ -1082,6 +1097,12 @@ const styles = StyleSheet.create({
     borderColor: '#333',
   },
 });
+
+
+
+
+
+
 
 
 

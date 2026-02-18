@@ -1,4 +1,4 @@
-import type { InventoryItem, Currency } from '@/types/rpg';
+﻿import type { InventoryItem, Currency } from '@/types/rpg';
 
 export const STARTER_INVENTORY: InventoryItem[] = [
   {
@@ -34,16 +34,17 @@ export const INITIAL_CURRENCIES: Currency[] = [
   {
     name: 'Codex Points',
     amount: 1000,
-    icon: '⚡',
+    icon: 'š¡',
   },
   {
     name: 'Soul Essence',
     amount: 500,
-    icon: '🔥',
+    icon: 'ðŸ”¥',
   },
   {
     name: 'Black Sun Tokens',
     amount: 10,
-    icon: '☀️',
+    icon: '˜€ï¸',
   },
 ];
+

@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Flame, CheckCircle, Circle, Award, TrendingUp } from 'lucide-react-native';
 import React from 'react';
@@ -7,7 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function RitualsScreen() {
   const { gameState, completeRitual } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
 
   const totalCompleted = gameState.dailyRituals.filter(r => r.completed).length;
   const totalRituals = gameState.dailyRituals.length;
@@ -16,17 +19,17 @@ export default function RitualsScreen() {
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'meditation':
-        return '🧘';
+        return 'ðŸ§˜';
       case 'training':
-        return '💪';
+        return 'ðŸ’ª';
       case 'study':
-        return '📚';
+        return 'ðŸ“š';
       case 'social':
-        return '👥';
+        return 'ðŸ‘¥';
       case 'creation':
-        return '✍️';
+        return 'ï¸';
       default:
-        return '⚡';
+        return 'š¡';
     }
   };
 
@@ -426,5 +429,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 });
+
+
 
 

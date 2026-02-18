@@ -9,16 +9,62 @@ export const KEYS = {
   PRIME_MEMORY_BACKUP: "mavis_prime_memory__CORRUPT_BACKUP",
 };
 
+let didHydrateChat = false;
+
 export async function loadChatHistory(): Promise<any[]> {
-  return jsonStoreGet<any[]>("global", KEYS.CHAT, []);
+  // Primary (current)
+  const g = jsonStoreGet<any[]>("global", KEYS.CHAT, []);
+  if (Array.isArray(g) && g.length > 0) {
+    didHydrateChat = true;
+    return g;
+  }
+
+  // Fallback (where your migration likely placed it)
+  const m = jsonStoreGet<any[]>("mavis_memory", KEYS.CHAT, []);
+  didHydrateChat = true;
+  return Array.isArray(m) ? m : [];
 }
 
+/**
+ * Prevent “empty overwrite” on boot:
+ * - don’t persist until after loadChatHistory() has run
+ * - refuse to overwrite non-empty storage with []
+ */
 export async function saveChatHistory(messages: any[]) {
-  jsonStoreSet("global", KEYS.CHAT, messages ?? []);
+  if (!didHydrateChat) return;
+
+  const next = Array.isArray(messages) ? messages : [];
+
+  if (next.length === 0) {
+    const existingGlobal = jsonStoreGet<any[]>("global", KEYS.CHAT, []);
+    const existingMigr = jsonStoreGet<any[]>("mavis_memory", KEYS.CHAT, []);
+    if ((Array.isArray(existingGlobal) && existingGlobal.length > 0) ||
+        (Array.isArray(existingMigr) && existingMigr.length > 0)) {
+      return;
+    }
+  }
+
+  // Write to global (your current reader)
+  await jsonStoreSet("global", KEYS.CHAT, next);
+
+  // Optional: keep migration scope in sync while stabilizing
+  await jsonStoreSet("mavis_memory", KEYS.CHAT, next);
 }
 
 export async function clearAllMavisStorage() {
-  [KEYS.CHAT, KEYS.CHAT_BACKUP, KEYS.PRIME_MEMORY, KEYS.PRIME_MEMORY_BACKUP].forEach(k =>
-    jsonStoreRemove("global", k)
+  await Promise.all(
+    [KEYS.CHAT, KEYS.CHAT_BACKUP, KEYS.PRIME_MEMORY, KEYS.PRIME_MEMORY_BACKUP].map(k =>
+      jsonStoreRemove("global", k)
+    )
+  );
+
+  // Optional: also clear the migrated scope so you don't “resurrect” old data later
+  await Promise.all(
+    [KEYS.CHAT, KEYS.CHAT_BACKUP, KEYS.PRIME_MEMORY, KEYS.PRIME_MEMORY_BACKUP].map(k =>
+      jsonStoreRemove("mavis_memory", k)
+    )
   );
 }
+
+
+

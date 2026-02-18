@@ -1,47 +1,124 @@
 ﻿import { db } from "./db";
 import { compressToBase64, decompressFromBase64 } from "../utils/compress";
 
-/**
- * json_store: value is either:
- *  - raw JSON string (encoding='json')
- *  - compressed base64 blob (encoding='json+deflate')
- */
+type Encoding = "json" | "json+deflate";
 
-export function jsonStoreSet(scope: string, key: string, value: any) {
-  const now = Date.now();
-  const json = JSON.stringify(value ?? null);
-
-  // compress only if big enough (tune threshold)
-  const THRESHOLD = 1500;
-  const shouldCompress = json.length >= THRESHOLD;
-
-  const storedValue = shouldCompress ? compressToBase64(json) : json;
-  const encoding = shouldCompress ? "json+deflate" : "json";
-
-  db.runSync(
-    `INSERT OR REPLACE INTO json_store (scope, key, value, encoding, updated_at)
-     VALUES (?, ?, ?, ?, ?)`,
-    [scope, key, storedValue, encoding, now]
+const CREATE_SQL = `
+  CREATE TABLE IF NOT EXISTS json_store (
+    scope TEXT NOT NULL,
+    key TEXT NOT NULL,
+    value TEXT NOT NULL,
+    encoding TEXT NOT NULL DEFAULT 'json',
+    updated_at INTEGER NOT NULL,
+    PRIMARY KEY (scope, key)
   );
+`;
+
+let _schemaReady = false;
+
+function ensureSchemaSync() {
+  if (_schemaReady) return;
+  try {
+    if (typeof (db as any)?.execSync === "function") {
+      (db as any).execSync(CREATE_SQL);
+      _schemaReady = true;
+    }
+  } catch (e) {}
 }
 
-export function jsonStoreGet<T>(scope: string, key: string, fallback: T): T {
-  const row = db.getFirstSync(
-    `SELECT value, encoding FROM json_store WHERE scope = ? AND key = ?`,
-    [scope, key]
-  ) as any;
-
-  if (!row?.value) return fallback;
-
+async function ensureSchemaAsync() {
+  if (_schemaReady) return;
   try {
-    const json =
-      row.encoding === "json+deflate" ? decompressFromBase64(row.value) : row.value;
-    return JSON.parse(json) as T;
-  } catch {
-    return fallback;
+    if (typeof (db as any)?.execAsync === "function") {
+      await (db as any).execAsync(CREATE_SQL);
+      _schemaReady = true;
+    } else {
+      ensureSchemaSync();
+    }
+  } catch (e) {
+    ensureSchemaSync();
   }
 }
 
-export function jsonStoreRemove(scope: string, key: string) {
-  db.runSync(`DELETE FROM json_store WHERE scope = ? AND key = ?`, [scope, key]);
+export async function ensureJsonStoreSchema() {
+  await ensureSchemaAsync();
 }
+
+export function jsonStoreGet<T>(scope: string, key: string, defaultValue: T): T {
+  ensureSchemaSync();
+  try {
+    const stmt = (db as any).prepareSync?.(
+      "SELECT value, encoding FROM json_store WHERE scope = ? AND key = ? LIMIT 1"
+    );
+    if (stmt?.executeSync) {
+      const res = stmt.executeSync([scope, key]);
+      const row = res?.getFirstSync?.();
+      stmt.finalizeSync?.();
+
+      if (!row) return defaultValue;
+
+      const raw = row.value as string;
+      const encoding = (row.encoding as Encoding) || "json";
+      const jsonString = encoding === "json+deflate" ? decompressFromBase64(raw) : raw;
+
+      return JSON.parse(jsonString) as T;
+    }
+    return defaultValue;
+  } catch (e) {
+    return defaultValue;
+  }
+}
+
+
+export function jsonStoreSetSync(scope: string, key: string, value: any, compress: boolean = false) {
+  ensureSchemaSync();
+  const jsonString = JSON.stringify(value ?? null);
+  const encoding: Encoding = compress ? "json+deflate" : "json";
+  const stored = compress ? compressToBase64(jsonString) : jsonString;
+  const now = Date.now();
+
+  try {
+    const stmt = (db as any).prepareSync?.(
+      "INSERT OR REPLACE INTO json_store (scope, key, value, encoding, updated_at) VALUES (?, ?, ?, ?, ?)"
+    );
+    stmt?.executeSync?.([scope, key, stored, encoding, now]);
+    stmt?.finalizeSync?.();
+  } catch (e) {}
+}
+
+export function jsonStoreRemoveSync(scope: string, key: string) {
+  ensureSchemaSync();
+  try {
+    const stmt = (db as any).prepareSync?.("DELETE FROM json_store WHERE scope = ? AND key = ?");
+    stmt?.executeSync?.([scope, key]);
+    stmt?.finalizeSync?.();
+  } catch (e) {}
+}
+
+export async function jsonStoreSet(scope: string, key: string, value: any, compress: boolean = false) {
+  await ensureSchemaAsync();
+  const jsonString = JSON.stringify(value ?? null);
+  const encoding: Encoding = compress ? "json+deflate" : "json";
+  const stored = compress ? compressToBase64(jsonString) : jsonString;
+  const now = Date.now();
+
+  if (typeof (db as any)?.runAsync === "function") {
+    await (db as any).runAsync(
+      "INSERT OR REPLACE INTO json_store (scope, key, value, encoding, updated_at) VALUES (?, ?, ?, ?, ?)",
+      [scope, key, stored, encoding, now]
+    );
+    return;
+  }
+
+  jsonStoreSetSync(scope, key, value, compress);
+
+export async function jsonStoreRemove(scope: string, key: string) {
+  await ensureSchemaAsync();
+
+  if (typeof (db as any)?.runAsync === "function") {
+    await (db as any).runAsync("DELETE FROM json_store WHERE scope = ? AND key = ?", [scope, key]);
+    return;
+  }
+
+  jsonStoreSetSync(scope, key, value, compress);
+

@@ -1,4 +1,4 @@
-import type { DailyRitual } from '@/types/rpg';
+﻿import type { DailyRitual } from '@/types/rpg';
 
 export const DAILY_RITUALS: DailyRitual[] = [
   {
@@ -13,7 +13,7 @@ export const DAILY_RITUALS: DailyRitual[] = [
   {
     id: 'business-action',
     name: 'Business Action',
-    description: 'FAYD HOA outreach – shortlist 3 HOAs',
+    description: 'FAYD HOA outreach €“ shortlist 3 HOAs',
     type: 'business',
     xpReward: 150,
     completed: false,
@@ -74,3 +74,4 @@ export const DAILY_RITUALS: DailyRitual[] = [
     streak: 0,
   },
 ];
+

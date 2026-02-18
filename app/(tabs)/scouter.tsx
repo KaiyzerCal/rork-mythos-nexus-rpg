@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Modal, Keyboard, TouchableWithoutFeedback, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { Search, TrendingUp, X, User, Brain, Zap, Heart, Shield, Save } from "lucide-react-native";
 import { useState } from 'react';
@@ -6,7 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function ScouterScreen() {
   const { gameState, addRosterEntry } = useGame();
-  const [scoutMode, setScoutMode] = useState<'self' | 'other'>('self');
+  
+  if (!gameState) {
+    return null;
+  }const [scoutMode, setScoutMode] = useState<'self' | 'other'>('self');
   const [questionnaireVisible, setQuestionnaireVisible] = useState(false);
   const [scoutName, setScoutName] = useState('');
   const [q1, setQ1] = useState('');
@@ -692,3 +695,4 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 });
+

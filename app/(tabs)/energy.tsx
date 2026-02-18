@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { Plus, Edit2, Trash2, X } from 'lucide-react-native';
 import { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, Pressable, Modal, TextInput, Alert, KeyboardAvoidingView, Platform } from 'react-native';
@@ -7,7 +7,10 @@ import type { EnergyLevel, EnergyStatus } from '@/types/rpg';
 
 export default function EnergyScreen() {
   const { gameState, addEnergySystem, updateEnergySystem, deleteEnergySystem } = useGame();
-  const { energySystems } = gameState;
+  
+  if (!gameState) {
+    return null;
+  }const { energySystems } = gameState;
   const insets = useSafeAreaInsets();
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -540,3 +543,4 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+

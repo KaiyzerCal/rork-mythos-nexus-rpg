@@ -1,9 +1,12 @@
-﻿import { useCallback, useEffect, useState } from "react";
+﻿import { ensurePrimeSchemaSync } from '../src/db/primeSchema';
+  
 import createContextHook from "@nkzw/create-context-hook";
-
 import { insertMemory, getAllMemory } from "../src/db/memory";
 import { db } from "../src/db/db";
 import { jsonStoreSet, jsonStoreGet } from "../src/db/jsonStore";
+
+ensurePrimeSchemaSync();
+
 
 export interface ChatMessage {
   id: string;
@@ -15,7 +18,6 @@ export interface ChatMessage {
   sessionId: string;
   memoryFlag: boolean;
 }
-
 export interface ArcIndex {
   id: string;
   arcName: string;
@@ -23,7 +25,6 @@ export interface ArcIndex {
   lastEvent: number;
   notes: string;
 }
-
 export interface CouncilProfile {
   id: string;
   councilId: string;
@@ -35,7 +36,6 @@ export interface CouncilProfile {
   lastUpdated: number;
   domainAuthority: string[];
 }
-
 export interface SystemSnapshot {
   id: string;
   timestamp: number;
@@ -43,7 +43,6 @@ export interface SystemSnapshot {
   reason?: string;
   payload: any;
 }
-
 // Long-term memory vault (slot-based)
 export function savePrimeMemoryToSqlite(args: {
   slot: number;
@@ -58,7 +57,6 @@ export function savePrimeMemoryToSqlite(args: {
 export function loadPrimeMemoryFromSqlite() {
   return getAllMemory();
 }
-
 function primeChatUpsert(m: ChatMessage) {
   db.runSync(
     `INSERT OR REPLACE INTO prime_chat
@@ -73,7 +71,6 @@ function primeChatLoad(limit: number = 250) {
 function primeChatClearAll() {
   db.execSync(`DELETE FROM prime_chat;`);
 }
-
 function arcsSaveAll(arcs: ArcIndex[]) {
   db.execSync(`DELETE FROM prime_arcs;`);
   for (const a of arcs) {
@@ -84,7 +81,6 @@ function arcsSaveAll(arcs: ArcIndex[]) {
 function arcsLoadAll() {
   return db.getAllSync(`SELECT * FROM prime_arcs ORDER BY lastEvent DESC`) as any[];
 }
-
 function councilSaveAll(rows: CouncilProfile[]) {
   db.execSync(`DELETE FROM prime_council_profiles;`);
   for (const p of rows) {
@@ -115,7 +111,6 @@ function councilLoadAll() {
     domainAuthority: safeJson(r.domainAuthority, []),
   })) as CouncilProfile[];
 }
-
 function snapshotInsert(s: SystemSnapshot) {
   db.runSync(
     `INSERT OR REPLACE INTO prime_snapshots (id, timestamp, mode, reason, payload) VALUES (?, ?, ?, ?, ?)`,
@@ -126,11 +121,9 @@ function snapshotLoad(limit: number = 50) {
   const rows = db.getAllSync(`SELECT * FROM prime_snapshots ORDER BY timestamp DESC LIMIT ?`, [limit]) as any[];
   return rows.map(r => ({ ...r, payload: safeJson(r.payload, {}) })) as SystemSnapshot[];
 }
-
 function safeJson(raw: string, fallback: any) {
   try { return JSON.parse(raw); } catch { return fallback; }
 }
-
 interface PrimeState {
   chatHistory: ChatMessage[];
   arcIndex: ArcIndex[];
@@ -138,7 +131,6 @@ interface PrimeState {
   systemSnapshots: SystemSnapshot[];
   storageBackend: "sqlite";
 }
-
 export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook(() => {
   const [state, setState] = useState<PrimeState>({
     chatHistory: [],
@@ -147,11 +139,12 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     systemSnapshots: [],
     storageBackend: "sqlite",
   });
-
-  useEffect(() => {
+  
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
+useEffect(() => {
     try {
-      jsonStoreSet("system", "storage_backend", { backend: "sqlite_all_v1", at: Date.now() });
-
+      jsonStoreSetSync("system", "storage_backend", { backend: "sqlite_all_v1", at: Date.now() });
       const chat = primeChatLoad(250).reverse().map((row: any) => ({
         id: row.id,
         timestamp: row.timestamp,
@@ -162,7 +155,6 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
         sessionId: row.sessionId,
         memoryFlag: !!row.memoryFlag,
       })) as ChatMessage[];
-
       setState(prev => ({
         ...prev,
         chatHistory: chat,
@@ -174,12 +166,10 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       console.warn("[PRIME] SQLite load failed:", e);
     }
   }, []);
-
   const addChatMessage = useCallback(async (message: ChatMessage) => {
     setState(prev => ({ ...prev, chatHistory: [...prev.chatHistory, message] }));
     try { primeChatUpsert(message); } catch (e) { console.warn("[PRIME] chat write fail:", e); }
   }, []);
-
   const replaceChatHistory = useCallback(async (chat: ChatMessage[]) => {
     setState(prev => ({ ...prev, chatHistory: chat }));
     try {
@@ -189,17 +179,14 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
       console.warn("[PRIME] replace chat fail:", e);
     }
   }, []);
-
   const setArcs = useCallback(async (arcs: ArcIndex[]) => {
     setState(prev => ({ ...prev, arcIndex: arcs }));
     try { arcsSaveAll(arcs); } catch (e) { console.warn("[PRIME] arcs save fail:", e); }
   }, []);
-
   const setCouncilProfiles = useCallback(async (profiles: CouncilProfile[]) => {
     setState(prev => ({ ...prev, councilProfiles: profiles }));
     try { councilSaveAll(profiles); } catch (e) { console.warn("[PRIME] council save fail:", e); }
   }, []);
-
   const createSystemSnapshot = useCallback(async (payload: any, mode: string = "omnisync", reason?: string) => {
     const snap: SystemSnapshot = {
       id: `snapshot-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -212,7 +199,6 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     try { snapshotInsert(snap); } catch (e) { console.warn("[PRIME] snapshot insert fail:", e); }
     return snap;
   }, []);
-
   const omniSync = useCallback(async (gameStateSnapshot: any, reason: string = "manual") => {
     const snap = await createSystemSnapshot(gameStateSnapshot, "omnisync", reason);
     
@@ -220,35 +206,28 @@ export const [MavisPrimeMemoryProvider, useMavisPrimeMemory] = createContextHook
     try {
       // Chat
       try {
-        primeChatClearAll();
-        for (const m of (state as any)?.chatHistory ?? []) primeChatUpsert(m);
-      } catch (e) { console.warn("[OMNI-SYNC] chat persist failed:", e); }
-
+        for (const m of stateRef.current?.chatHistory ?? []) primeChatUpsert(m);} catch (e) { console.warn("[OMNI-SYNC] chat persist failed:", e); }
       // Arcs
       try {
-        const arcs = (state as any)?.arcIndex ?? [];
+        const arcs = stateRef.current?.arcIndex ?? [];
         arcsSaveAll(arcs);
       } catch (e) { console.warn("[OMNI-SYNC] arcs persist failed:", e); }
-
       // Councils
       try {
-        const profiles = (state as any)?.councilProfiles ?? [];
+        const profiles = stateRef.current?.councilProfiles ?? [];
         councilSaveAll(profiles);
       } catch (e) { console.warn("[OMNI-SYNC] council persist failed:", e); }
-
       // Snapshots already inserted in createSystemSnapshot, but we also mark sync metadata
       try {
-        jsonStoreSet("system", "last_omnisync", { at: Date.now(), reason, snapshotId: snap.id });
+        jsonStoreSetSync("system", "last_omnisync", { at: Date.now(), reason, snapshotId: snap.id });
       } catch (e) { console.warn("[OMNI-SYNC] marker persist failed:", e); }
-
       // Optional: if you later add memoryEntries SQLite table, persist it here
       // (only runs if a function named primeMemorySaveAll exists in this file)
       try {
         if (typeof (globalThis as any).primeMemorySaveAll === "function") {
-          (globalThis as any).primeMemorySaveAll((state as any)?.memoryEntries ?? []);
+          (globalThis as any).primeMemorySaveAll(stateRef.current?.memoryEntries ?? []);
         }
       } catch (e) { /* ignore */ }
-
     } catch (e) {
       console.warn("[OMNI-SYNC] persist block failed:", e);
     }
@@ -259,12 +238,10 @@ return {
       timestamp: snap.timestamp,
     };
   }, [createSystemSnapshot]);
-
   const clearChatSessionOnly = useCallback(async () => {
     setState(prev => ({ ...prev, chatHistory: [] }));
     try { primeChatClearAll(); } catch (e) { console.warn("[PRIME] clear chat fail:", e); }
   }, []);
-
   return {
     state,
     addChatMessage,
@@ -276,5 +253,10 @@ return {
     clearChatSessionOnly,
   };
 });
+
+
+
+
+
 
 

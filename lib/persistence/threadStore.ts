@@ -1,6 +1,6 @@
-import * as SQLite from "expo-sqlite";
+﻿import * as SQLite from "expo-sqlite";
 
-const db = SQLite.openDatabaseSync("mavis.db");
+const db = SQLite.openDatabaseSync("vantara.db");
 
 export type ChatThread = {
   id: string;
@@ -70,3 +70,4 @@ export function addMessage(msg: ChatMessage) {
 export function clearThread(threadId: string) {
   db.runSync("DELETE FROM messages WHERE threadId = ?", [threadId]);
 }
+

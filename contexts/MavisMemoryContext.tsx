@@ -1,6 +1,6 @@
 ﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
 import createContextHook from "@nkzw/create-context-hook";
-import { jsonStoreGet, jsonStoreSet, jsonStoreRemove } from "../src/db/jsonStore";
+import { jsonStoreGet, jsonStoreSet, jsonStoreRemove, jsonStoreSetSync, jsonStoreRemoveSync } from "../src/db/jsonStore";
 
 const MAVIS_MEMORY_KEY = "mavis_memory_items";
 const MAVIS_CONVERSATIONS_KEY = "mavis_conversation_threads";
@@ -51,8 +51,8 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
   }, []);
 
   const persist = useCallback((items: MemoryItem[], threads: ConversationThread[]) => {
-    jsonStoreSet(SCOPE, MAVIS_MEMORY_KEY, items ?? []);
-    jsonStoreSet(SCOPE, MAVIS_CONVERSATIONS_KEY, threads ?? []);
+    jsonStoreSetSync(SCOPE, MAVIS_MEMORY_KEY, items ?? []);
+    jsonStoreSetSync(SCOPE, MAVIS_CONVERSATIONS_KEY, threads ?? []);
   }, []);
 
   const addMemoryItem = useCallback(async (item: MemoryItem) => {
@@ -99,8 +99,8 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
 
   const clearAllMemory = useCallback(async () => {
     setState(prev => ({ ...prev, memoryItems: [], conversationThreads: [] }));
-    jsonStoreRemove(SCOPE, MAVIS_MEMORY_KEY);
-    jsonStoreRemove(SCOPE, MAVIS_CONVERSATIONS_KEY);
+    jsonStoreRemoveSync(SCOPE, MAVIS_MEMORY_KEY);
+    jsonStoreRemoveSync(SCOPE, MAVIS_CONVERSATIONS_KEY);
   }, []);
 
   return useMemo(() => ({
@@ -113,4 +113,5 @@ export const [MavisMemoryProvider, useMavisMemory] = createContextHook(() => {
     clearAllMemory,
   }), [state, addMemoryItem, updateMemoryItem, deleteMemoryItem, createConversationThread, updateConversationThread, clearAllMemory]);
 });
+
 

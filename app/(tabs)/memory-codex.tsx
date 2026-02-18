@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, Plus, Calendar, Tag, Sparkles } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -7,7 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MemoryCodexScreen() {
   const { gameState, addJournalEntry } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [isCreating, setIsCreating] = useState(false);
   const [newEntry, setNewEntry] = useState({ title: '', content: '', mood: '', tags: '' });
 
@@ -411,3 +414,4 @@ const styles = StyleSheet.create({
     color: '#9400D3',
   },
 });
+

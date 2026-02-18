@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { Package, Plus, Trash2, X, Scan, Edit2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native';
@@ -8,7 +8,10 @@ import type { InventoryItemV2 } from '@/types/rpg';
 
 export default function InventoryScreen() {
   const { gameState, addInventoryItem, deleteInventoryItem, updateInventoryItem } = useGame();
-  const [modalVisible, setModalVisible] = useState(false);
+  
+  if (!gameState) {
+    return null;
+  }const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItemV2 | null>(null);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
@@ -226,7 +229,7 @@ Respond with ONLY a valid JSON object in this exact format (no markdown, no expl
       setScanModalVisible(false);
       setScanForm({ appearance: '', power: '', rarity: '' });
       
-      Alert.alert('✓ Item Added', `${newItem.name} has been added to your inventory!`);
+      Alert.alert('“ Item Added', `${newItem.name} has been added to your inventory!`);
     } catch (error) {
       console.error('[SCAN] Error:', error);
       console.error('[SCAN] Error stack:', error instanceof Error ? error.stack : 'No stack');
@@ -1158,4 +1161,6 @@ const styles = StyleSheet.create({
     gap: 8,
   },
 });
+
+
 

@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { Medal, TrendingUp, Shield, Zap, Plus, X, Edit2 } from 'lucide-react-native';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert } from 'react-native';
@@ -7,7 +7,10 @@ import type { RosterEntry } from '@/types/rpg';
 
 export default function RankingsScreen() {
   const { gameState, addRosterEntry, deleteRosterEntry, updateRosterEntry } = useGame();
-  const [sortBy, setSortBy] = useState<'gpr' | 'pvp' | 'level'>('gpr');
+  
+  if (!gameState) {
+    return null;
+  }const [sortBy, setSortBy] = useState<'gpr' | 'pvp' | 'level'>('gpr');
   const [modalVisible, setModalVisible] = useState(false);
   const [detailModalVisible, setDetailModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -1046,3 +1049,4 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 });
+

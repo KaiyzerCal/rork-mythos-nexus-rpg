@@ -1,13 +1,21 @@
-import { Home, Flame, Target, Users, Cpu } from "lucide-react-native";
-import React from "react";
+﻿import { Home, Flame, Target, Users, Cpu } from "lucide-react-native";
+import React, { useEffect } from "react";
 
 import { initThreadStore } from "../../lib/persistence/threadStore";
 import { Tabs } from "expo-router";
 import { installRorkUnifiedPersistence } from "../../lib/rork-unified-persistence";
-installRorkUnifiedPersistence();
 
-initThreadStore();
+import { ensurePrimeSchemaSync } from '../../src/db/primeSchema';
 export default function TabLayout() {
+  useEffect(() => {
+    // Run once per JS runtime
+    if ((globalThis as any).__vantaraInitDone) return;
+    (globalThis as any).__vantaraInitDone = true;
+
+    try { installRorkUnifiedPersistence(); } catch (e) { console.warn("[INIT] unified persistence failed:", e); }
+    try { ensurePrimeSchemaSync(); } catch (e) { console.warn("[INIT] prime schema failed:", e); }
+    try { initThreadStore(); } catch (e) { console.warn("[INIT] thread store failed:", e); }
+  }, []);
   return (
     <Tabs
       screenOptions={{
@@ -75,5 +83,8 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+
+
 
 

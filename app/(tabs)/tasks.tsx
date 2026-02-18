@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { CheckSquare, Plus, Check, X, Trash2, Repeat, Flame, Target, Edit } from 'lucide-react-native';
 import React, { useState, useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View, Modal, Alert, KeyboardAvoidingView, Platform } from 'react-native';
@@ -7,7 +7,10 @@ import type { Task, TaskType, TaskRecurrence } from '@/types/rpg';
 
 export default function TasksScreen() {
   const { gameState, addTask, updateTask, completeTask, deleteTask } = useGame();
-  const [modalVisible, setModalVisible] = useState(false);
+  
+  if (!gameState) {
+    return null;
+  }const [modalVisible, setModalVisible] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'task' | 'habit'>('all');
 
@@ -44,7 +47,7 @@ export default function TasksScreen() {
       subTree.forEach(sub => {
         subSkills.push({
           id: sub.id,
-          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} → ${sub.name}`,
+          name: `${gameState.skillTrees.find(s => s.id === parentId)?.name} †’ ${sub.name}`,
           isParent: false,
           parentId,
         });
@@ -146,7 +149,7 @@ export default function TasksScreen() {
       const parentSkill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
       const subSkill = gameState.skillSubTrees?.[task.linkedSkillId]?.find(s => s.id === task.linkedSubSkillId);
       if (parentSkill && subSkill) {
-        return `${parentSkill.name} → ${subSkill.name}`;
+        return `${parentSkill.name} †’ ${subSkill.name}`;
       }
     } else {
       const skill = gameState.skillTrees.find(s => s.id === task.linkedSkillId);
@@ -925,5 +928,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+
+
 
 

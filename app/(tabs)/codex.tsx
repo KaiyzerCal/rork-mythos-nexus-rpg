@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BookOpen, Shield, Users, Crown, Plus } from 'lucide-react-native';
 import React, { useState } from 'react';
@@ -9,7 +9,10 @@ type Tab = 'journal' | 'vault' | 'allies' | 'councils';
 
 export default function CodexScreen() {
   const { gameState, isLoading, addVaultEntry } = useGame();
-  const insets = useSafeAreaInsets();
+  
+  if (!gameState) {
+    return null;
+  }const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<Tab>('journal');
   const [showAddEntry, setShowAddEntry] = useState(false);
   const [entryTitle, setEntryTitle] = useState('');
@@ -662,3 +665,4 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
+

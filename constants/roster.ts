@@ -1,11 +1,11 @@
-import type { RosterEntry } from '@/types/rpg';
+﻿import type { RosterEntry } from '@/types/rpg';
 
 export const INITIAL_ROSTER: RosterEntry[] = [
   {
     id: 'self-calvin',
     display: 'Calvin J. Watkins',
     role: 'self',
-    rank: 'SS (Trial→SSS)',
+    rank: 'SS (Trial†’SSS)',
     level: 90,
     jjkGrade: 'Domain+',
     opTier: 'Yonko+/Gorosei-',
@@ -106,3 +106,4 @@ export const INITIAL_ROSTER: RosterEntry[] = [
     notes: 'Shadow loops',
   },
 ];
+

@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import React, { useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, Modal, Keyboard, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,7 +6,10 @@ import { Edit2, X, Search, Package, Medal, TowerControl, Zap, Sparkles, BookLock
 import { useRouter } from 'expo-router';
 
 export default function StatusScreen() {
-  const router = useRouter();
+  
+  try {
+    // Guard: avoid crash if profile/state not loaded yet
+  } catch (e) {}const router = useRouter();
   const { gameState, isLoading, updateStat, updateArcStory, updateIdentity, updateAllStats } = useGame();
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editSection, setEditSection] = useState<'identity' | 'stats' | 'state' | 'arc' | null>(null);
@@ -33,7 +36,15 @@ export default function StatusScreen() {
     );
   }
 
-  const { identity, stats, currentForm, currentBPM, currentFloor } = gameState;
+  if (!gameState) { return null; }
+  const identity = gameState?.identity ?? { inscribedName: '', titles: [], speciesLineage: [], territory: { class: '', towerFloorsInfluence: 0 } };
+
+const titles = Array.isArray(identity?.titles) ? identity.titles : [];
+const speciesLineage = Array.isArray(identity?.speciesLineage) ? identity.speciesLineage : [];
+const stats = gameState?.stats ?? {};
+const currentForm = gameState?.currentForm ?? '';
+const currentBPM = gameState?.currentBPM ?? 0;
+const currentFloor = gameState?.currentFloor ?? 0;
 
   const openEditModal = (section: 'identity' | 'stats' | 'state' | 'arc') => {
     if (section === 'identity') {
@@ -74,14 +85,14 @@ export default function StatusScreen() {
   const saveEdits = () => {
     if (editSection === 'identity') {
       updateIdentity({
-        inscribedName: editedData.inscribedName,
-        titles: [editedData.title, ...identity.titles.slice(1)],
-        speciesLineage: [...identity.speciesLineage.slice(0, -1), editedData.species],
-        territory: {
-          towerFloorsInfluence: editedData.territoryFloors,
-          class: editedData.territoryClass,
-        },
-      });
+  inscribedName: editedData.inscribedName,
+  titles: [editedData.title, ...(identity?.titles?.slice(1) ?? [])],
+  speciesLineage: [...(identity?.speciesLineage?.slice(0, -1) ?? []), editedData.species],
+  territory: {
+    ...identity?.territory,
+    towerFloorsInfluence: editedData.territoryFloors,
+  },
+});
     } else if (editSection === 'stats') {
       updateAllStats({
         level: Number(editedData.level),
@@ -118,7 +129,7 @@ export default function StatusScreen() {
         <View style={styles.currenciesCard}>
           <Text style={styles.cardTitle}>Currencies</Text>
           <View style={styles.currenciesGrid}>
-            {gameState.currencies.map((currency) => (
+            {(gameState.currencies ?? []).map((currency) => (
               <View key={currency.name} style={styles.currencyItem}>
                 <Text style={styles.currencyIcon}>{currency.icon}</Text>
                 <View style={styles.currencyInfo}>
@@ -737,3 +748,12 @@ const styles = StyleSheet.create({
     fontWeight: '600' as const,
   },
 });
+
+
+
+
+
+
+
+
+
