@@ -1,6 +1,6 @@
-import * as SQLite from "expo-sqlite";
+﻿import * as SQLite from "expo-sqlite";
 
-export const db = SQLite.openDatabase("mavis.db");
+export const db = SQLite.openDatabase("vantara.db");
 
 export function initDb() {
   db.transaction(tx => {
@@ -26,3 +26,4 @@ export function initDb() {
     tx.executeSql(`CREATE INDEX IF NOT EXISTS idx_messages_threadId ON messages(threadId);`);
   });
 }
+
