@@ -54,3 +54,16 @@ android.bak_*/
 _working_build.json
 mojibake-report.csv
 vantara-latest.apk
+# --- Local backups / artifacts ---
+.backup/
+_backup_mojibake_*/
+_bk_*/
+android.bak_*/
+**/.gradle/
+**/*.bak
+**/*.bak.*
+**/*.bak_*
+_working_build.json
+mojibake-report.csv
+vantara-latest.apk
+rcmythos
