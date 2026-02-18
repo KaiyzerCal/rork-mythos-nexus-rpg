@@ -1,0 +1,42 @@
+﻿export async function ensureJsonStoreSchema(db: any) {
+  const sql = 
+    CREATE TABLE IF NOT EXISTS json_store (
+      key TEXT PRIMARY KEY NOT NULL,
+      value TEXT NOT NULL
+    );
+  ;
+  try {
+    if (typeof db?.execAsync === 'function') {
+      await db.execAsync(sql);
+    } else if (typeof db?.execSync === 'function') {
+      db.execSync(sql);
+    } else if (typeof db?.exec === 'function') {
+      db.exec([{ sql, args: [] }], false, () => {});
+    }
+  } catch (e) {}
+}
+import { db } from "./db";
+import { compressToBase64, decompressFromBase64 } from "../utils/compress";
+
+
+/**
+ * Ensures the json_store table exists before any reads/writes.
+ */
+else if (typeof (db as any).execSync === 'function') {
+      (db as any).execSync(sql);
+    } else if (typeof (db as any).exec === 'function') {
+      (db as any).exec([{ sql, args: [] }], false, () => {});
+    }
+  } catch (e) {}
+}
+  } catch (e) {}
+}
+/**
+ * json_store: value is either:
+ *  - raw JSON string (encoding='json')
+ *  - compressed base64 blob (encoding='json+deflate')
+ */
+
+
+
+

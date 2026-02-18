@@ -1,18 +1,25 @@
-{
-  "extends": "expo/tsconfig.base",
-  "compilerOptions": {
-    "strict": true,
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
-    "baseUrl": null
-  },
-  "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts"
-  ]
+﻿{
+    "extends":  "expo/tsconfig.base",
+    "compilerOptions":  {
+                            "strict":  true,
+                            "baseUrl":  ".",
+                            "paths":  {
+                                          "@/*":  [
+                                                      "./*"
+                                                  ]
+                                      }
+                        },
+    "include":  [
+                    "**/*.ts",
+                    "**/*.tsx",
+                    ".expo/types/**/*.ts",
+                    "expo-env.d.ts"
+                ],
+    "exclude":  [
+                    "_backup_*",
+                    "**/_backup_*",
+                    "**/*.bak_*",
+                    "**/*.bak_guard_*",
+                    "android.bak_*"
+                ]
 }
