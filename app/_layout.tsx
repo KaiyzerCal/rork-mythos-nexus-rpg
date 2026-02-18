@@ -32,7 +32,7 @@ export default function RootLayout() {
         <GameProvider>
           <MavisMemoryProvider>
             <MavisPrimeMemoryProvider>
-              <GestureHandlerRootView>
+              <GestureHandlerRootView style={{ flex: 1 }}>
                 <RootLayoutNav />
               </GestureHandlerRootView>
             </MavisPrimeMemoryProvider>

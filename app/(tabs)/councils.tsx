@@ -544,7 +544,7 @@ Does this conversation meaningfully contribute to character growth?`,
           {isLoading ? (
             <TouchableOpacity
               style={styles.stopButton}
-              onPress={() => stop()}
+              onPress={() => { if (typeof stop === 'function') stop(); }}
               activeOpacity={0.7}
             >
               <StopCircle size={20} color="#FF6B35" />
