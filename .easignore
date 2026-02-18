@@ -1,4 +1,6 @@
-bun.lockb
-bun.lock
-**/bun.lockb
-**/bun.lock
+﻿**\android.bak_*
+**\*.bak_*
+**\*.bak_guard_*
+**\_backup_**
+**\.git\**
+**\node_modules\**

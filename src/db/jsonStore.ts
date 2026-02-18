@@ -8,11 +8,11 @@ const CREATE_SQL = `
     scope TEXT NOT NULL,
     key TEXT NOT NULL,
     value TEXT NOT NULL,
-    encoding TEXT NOT NULL DEFAULT 'json',
-    updated_at INTEGER NOT NULL,
+    updated_at INTEGER,
     PRIMARY KEY (scope, key)
   );
 `;
+;
 
 let _schemaReady = false;
 
@@ -44,9 +44,14 @@ export async function ensureJsonStoreSchema() {
   await ensureSchemaAsync();
 }
 
+/**
+ * Read a JSON object from json_store.
+ * Returns defaultValue if missing or invalid.
+ */
 export function jsonStoreGet<T>(scope: string, key: string, defaultValue: T): T {
   ensureSchemaSync();
   try {
+    // expo-sqlite sync API via prepareSync/executeSync in some builds
     const stmt = (db as any).prepareSync?.(
       "SELECT value, encoding FROM json_store WHERE scope = ? AND key = ? LIMIT 1"
     );
@@ -59,42 +64,22 @@ export function jsonStoreGet<T>(scope: string, key: string, defaultValue: T): T 
 
       const raw = row.value as string;
       const encoding = (row.encoding as Encoding) || "json";
-      const jsonString = encoding === "json+deflate" ? decompressFromBase64(raw) : raw;
 
+      const jsonString = encoding === "json+deflate" ? decompressFromBase64(raw) : raw;
       return JSON.parse(jsonString) as T;
     }
+
+    // If sync statement APIs aren't available, fallback to default
     return defaultValue;
   } catch (e) {
     return defaultValue;
   }
 }
 
-
-export function jsonStoreSetSync(scope: string, key: string, value: any, compress: boolean = false) {
-  ensureSchemaSync();
-  const jsonString = JSON.stringify(value ?? null);
-  const encoding: Encoding = compress ? "json+deflate" : "json";
-  const stored = compress ? compressToBase64(jsonString) : jsonString;
-  const now = Date.now();
-
-  try {
-    const stmt = (db as any).prepareSync?.(
-      "INSERT OR REPLACE INTO json_store (scope, key, value, encoding, updated_at) VALUES (?, ?, ?, ?, ?)"
-    );
-    stmt?.executeSync?.([scope, key, stored, encoding, now]);
-    stmt?.finalizeSync?.();
-  } catch (e) {}
-}
-
-export function jsonStoreRemoveSync(scope: string, key: string) {
-  ensureSchemaSync();
-  try {
-    const stmt = (db as any).prepareSync?.("DELETE FROM json_store WHERE scope = ? AND key = ?");
-    stmt?.executeSync?.([scope, key]);
-    stmt?.finalizeSync?.();
-  } catch (e) {}
-}
-
+/**
+ * Write a JSON object to json_store.
+ * If compress=true, stores as deflated base64.
+ */
 export async function jsonStoreSet(scope: string, key: string, value: any, compress: boolean = false) {
   await ensureSchemaAsync();
   const jsonString = JSON.stringify(value ?? null);
@@ -102,6 +87,7 @@ export async function jsonStoreSet(scope: string, key: string, value: any, compr
   const stored = compress ? compressToBase64(jsonString) : jsonString;
   const now = Date.now();
 
+  // Prefer async exec if available
   if (typeof (db as any)?.runAsync === "function") {
     await (db as any).runAsync(
       "INSERT OR REPLACE INTO json_store (scope, key, value, encoding, updated_at) VALUES (?, ?, ?, ?, ?)",
@@ -110,7 +96,16 @@ export async function jsonStoreSet(scope: string, key: string, value: any, compr
     return;
   }
 
-  jsonStoreSetSync(scope, key, value, compress);
+  // Sync fallback
+  try {
+    ensureSchemaSync();
+    const stmt = (db as any).prepareSync?.(
+      "INSERT OR REPLACE INTO json_store (scope, key, value, encoding, updated_at) VALUES (?, ?, ?, ?, ?)"
+    );
+    stmt?.executeSync?.([scope, key, stored, encoding, now]);
+    stmt?.finalizeSync?.();
+  } catch (e) {}
+}
 
 export async function jsonStoreRemove(scope: string, key: string) {
   await ensureSchemaAsync();
@@ -120,5 +115,11 @@ export async function jsonStoreRemove(scope: string, key: string) {
     return;
   }
 
-  jsonStoreSetSync(scope, key, value, compress);
+  try {
+    ensureSchemaSync();
+    const stmt = (db as any).prepareSync?.("DELETE FROM json_store WHERE scope = ? AND key = ?");
+    stmt?.executeSync?.([scope, key]);
+    stmt?.finalizeSync?.();
+  } catch (e) {}
+}
 
