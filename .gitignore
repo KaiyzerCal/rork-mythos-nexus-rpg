@@ -43,4 +43,14 @@ android/
 rork-eslint.config.js
 core
 node_modules
-.expo
+.expo# --- Local backups / artifacts ---
+.backup/
+_backup_mojibake_*/
+_bk_*/
+android.bak_*/
+**/*.bak
+**/*.bak.*
+**/*.bak_*
+_working_build.json
+mojibake-report.csv
+vantara-latest.apk
