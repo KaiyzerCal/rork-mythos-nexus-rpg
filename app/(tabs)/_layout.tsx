@@ -3,12 +3,7 @@ import React from "react";
 
 
 import { migrateLegacyDbOnce } from "../../lib/persistence/migrateLegacyDbOnce";
-import { initThreadStore } from "../../lib/persistence/threadStore";
 import { Tabs } from "expo-router";
-import { installRorkUnifiedPersistence } from "../../lib/rork-unified-persistence";
-installRorkUnifiedPersistence();
-
-initThreadStore();
 export default function TabLayout() {
   return (
     <Tabs
@@ -77,6 +72,9 @@ export default function TabLayout() {
     </Tabs>
   );
 }
+
+
+
 
 
 

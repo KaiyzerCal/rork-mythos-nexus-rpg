@@ -1,4 +1,4 @@
-import { useGame } from '@/contexts/GameContext';
+﻿import { useGame } from '@/contexts/GameContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Shield, Plus, Lock, Calendar, AlertCircle, Edit2, Trash2, Image as ImageIcon, FileText, Upload, X } from 'lucide-react-native';
 import React, { useState, useCallback } from 'react';
@@ -6,7 +6,7 @@ import { ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, Alert,
 import CopyButton from '@/components/CopyButton';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
-import * as DocumentPicker from 'expo-document-picker';
+// import * as DocumentPicker from 'expo-document-picker'; // (disabled: requires new native build)
 import type { VaultEntry } from '@/types/rpg';
 
 interface AttachmentPreview {
@@ -63,7 +63,7 @@ export default function VaultCodexScreen() {
       });
 
       if (!result.canceled && result.assets) {
-        const newAttachments: AttachmentPreview[] = result.assets.map((asset) => ({
+        const newAttachments: AttachmentPreview[] = result.assets.map((asset: any) => ({
           uri: asset.uri,
           name: asset.fileName || `image_${Date.now()}`,
           type: 'image' as const,
@@ -81,13 +81,12 @@ export default function VaultCodexScreen() {
   const pickDocument = useCallback(async () => {
     try {
       console.log('[VAULT] Launching document picker...');
-      const result = await DocumentPicker.getDocumentAsync({
-        multiple: true,
-        copyToCacheDirectory: true,
-      });
+      const result = { canceled: true, assets: [] as any[] };
+// Disabled: file picker requires a new native build to work reliably on device.
+// Re-enable after next EAS Build window.
 
       if (!result.canceled && result.assets) {
-        const newAttachments: AttachmentPreview[] = result.assets.map((asset) => ({
+        const newAttachments: AttachmentPreview[] = result.assets.map((asset: any) => ({
           uri: asset.uri,
           name: asset.name || `file_${Date.now()}`,
           type: 'file' as const,
@@ -550,7 +549,7 @@ export default function VaultCodexScreen() {
               style={styles.closeButton}
               onPress={() => setViewingEntry(null)}
             >
-              <Text style={styles.closeButtonText}>✕</Text>
+              <Text style={styles.closeButtonText}>âœ•</Text>
             </TouchableOpacity>
           </View>
 
@@ -1162,3 +1161,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
 });
+
+
+
+

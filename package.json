@@ -12,10 +12,6 @@
     "android": "expo run:android",
     "ios": "expo run:ios"
   },
-  "overrides": {
-    "expo-location": "19.0.8"
-  },
-  
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
     "@hono/trpc-server": "^0.4.1",
@@ -33,6 +29,7 @@
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.10",
     "expo-dev-client": "~6.0.20",
+    "expo-document-picker": "~14.0.8",
     "expo-font": "~14.0.9",
     "expo-haptics": "~15.0.7",
     "expo-image": "~3.0.10",
@@ -69,7 +66,5 @@
     "eslint": "^9.31.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
-  },
-  "private": true
+  }
 }
-

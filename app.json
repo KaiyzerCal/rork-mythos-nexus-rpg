@@ -39,8 +39,7 @@
         }
       ],
       "expo-font",
-      "expo-web-browser",
-      "expo-sqlite"
+      "expo-web-browser"
     ],
     "updates": {
       "enabled": true,
@@ -49,6 +48,14 @@
     },
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": "https://rork.com/"
+      },
+      "eas": {
+        "projectId": "5efca233-e8dc-424b-8bc0-acf1b9c04737"
+      }
     }
   }
 }
