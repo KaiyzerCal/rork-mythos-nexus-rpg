@@ -311,20 +311,22 @@ RELATIONSHIPS MODULE:
   }, [setMessages]);
 
   useEffect(() => {
-    if (messages.length > 0) {
-      const validMessages = messages.filter(msg => {
-        return msg && msg.id && msg.role && msg.parts && Array.isArray(msg.parts);
-      });
+    if (!chatInitialized || messages.length === 0) return;
+    const validMessages = messages.filter(msg => {
+      return msg && msg.id && msg.role && msg.parts && Array.isArray(msg.parts);
+    });
+    if (validMessages.length > 0) {
+      console.log('[MAVIS-PRIME] Saving chat history:', validMessages.length, 'messages');
       Storage.setItem(MAVIS_CHAT_HISTORY_KEY, JSON.stringify(validMessages)).catch(err => {
         console.error('[MAVIS-PRIME] Failed to save chat history:', err);
       });
-      if (isNearBottom) {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-      }
     }
-  }, [messages, isNearBottom]);
+    if (isNearBottom) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages, isNearBottom, chatInitialized]);
 
 
 
