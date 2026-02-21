@@ -293,6 +293,36 @@ For mobile apps, you'll configure your app's deep linking scheme in `app.json`.
 
 ## Troubleshooting
 
+### **Production build does not match preview build**
+
+If preview and production look different, the most common cause is that they are pulling different JS bundles (or the same OTA update channel unexpectedly).
+
+This repo now uses explicit EAS channels in `eas.json`:
+
+- `development` → `development` channel
+- `preview` → `preview` channel
+- `production` → `production` channel
+
+Recommended release flow:
+
+```bash
+# Internal QA build
+eas build --profile preview --platform ios
+eas build --profile preview --platform android
+
+# Publish OTA only to preview testers
+eas update --branch preview --message "Preview QA"
+
+# App Store / Play Store binary
+eas build --profile production --platform ios
+eas build --profile production --platform android
+
+# Publish OTA only to production users
+eas update --branch production --message "Production hotfix"
+```
+
+`app.json` is configured with `runtimeVersion.policy = "appVersion"`, so OTA updates only apply to binaries with the same app version. This prevents new updates from being delivered to incompatible native builds.
+
 ### **App not loading on device?**
 
 1. Make sure your phone and computer are on the same WiFi network
